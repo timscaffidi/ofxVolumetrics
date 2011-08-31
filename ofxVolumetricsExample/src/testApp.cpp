@@ -3,6 +3,7 @@
 //--------------------------------------------------------------
 void testApp::setup()
 {
+    ofSetFrameRate(60);
     background.loadImage("background.png");
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 
