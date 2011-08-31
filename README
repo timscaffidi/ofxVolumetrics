@@ -4,7 +4,7 @@ ofxVolumetrics - render volumetric data on the GPU using GLSL and openFrameworks
  Volumetric rendering algorithm adapted from Peter Trier (http://www.daimi.au.dk/~trier/?page_id=98)
 
  Usage:
-    copy the shaders folder to your app's bin/data folder
+    copy or make symbolic links to the shaders in your app's bin/data/shaders folder.
 
     setup:
         void setup(int w, int h, int d, ofVec3f voxelSize);
