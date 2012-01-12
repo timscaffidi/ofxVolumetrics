@@ -14,45 +14,45 @@
 
 class ofxVolumetrics
 {
-    public:
-        ofxVolumetrics();
-        virtual ~ofxVolumetrics();
-        void setup(int w, int h, int d, ofVec3f voxelSize);
-        void destroy();
-        void updateVolumeData(unsigned char * data, int w, int h, int d, int xOffset, int yOffset, int zOffset);
-        void drawVolume(float x, float y, float z, float size, int zTexOffset);
-        void drawVolume(float x, float y, float z, float w, float h, float d, int zTexOffset);
-        bool isInitialized();
-        int getVolumeWidth();
-        int getVolumeHeight();
-        int getVolumeDepth();
-        int getRenderWidth();
-        int getRenderHeight();
-        float getXyQuality();
-        float getZQuality();
-        float getThreshold();
-        float getDensity();
-        void setXyQuality(float q);
-        void setZQuality(float q);
-        void setThreshold(float t);
-        void setDensity(float d);
-        void setRenderSettings(float xyQuality, float zQuality, float dens, float thresh);
-    protected:
-    private:
-        void drawRGBCube();
-        void updateRenderDimentions();
+public:
+    ofxVolumetrics();
+    virtual ~ofxVolumetrics();
+    void setup(int w, int h, int d, ofVec3f voxelSize);
+    void destroy();
+    void updateVolumeData(unsigned char * data, int w, int h, int d, int xOffset, int yOffset, int zOffset);
+    void drawVolume(float x, float y, float z, float size, int zTexOffset);
+    void drawVolume(float x, float y, float z, float w, float h, float d, int zTexOffset);
+    bool isInitialized();
+    int getVolumeWidth();
+    int getVolumeHeight();
+    int getVolumeDepth();
+    int getRenderWidth();
+    int getRenderHeight();
+    float getXyQuality();
+    float getZQuality();
+    float getThreshold();
+    float getDensity();
+    void setXyQuality(float q);
+    void setZQuality(float q);
+    void setThreshold(float t);
+    void setDensity(float d);
+    void setRenderSettings(float xyQuality, float zQuality, float dens, float thresh);
+protected:
+private:
+    void drawRGBCube();
+    void updateRenderDimentions();
 
-        ofFbo fboBackground, fboRender;
-        ofShader volumeShader;
-        ofxTexture3d volumeTexture;
-        //ofMesh volumeMesh; //unfortunately this only supports 2d texture coordinates at the moment.
-        ofVec3f volVerts[24];
-        ofVec3f volNormals[24];
-        ofVec3f voxelRatio;
-        bool bIsInitialized;
-        int volWidth, volHeight, volDepth;
-        ofVec3f quality;
-        float threshold;
-        float density;
-        int renderWidth, renderHeight;
+    ofFbo fboBackground, fboRender;
+    ofShader volumeShader;
+    ofxTexture3d volumeTexture;
+    //ofMesh volumeMesh; //unfortunately this only supports 2d texture coordinates at the moment.
+    ofVec3f volVerts[24];
+    ofVec3f volNormals[24];
+    ofVec3f voxelRatio;
+    bool bIsInitialized;
+    int volWidth, volHeight, volDepth;
+    ofVec3f quality;
+    float threshold;
+    float density;
+    int renderWidth, renderHeight;
 };

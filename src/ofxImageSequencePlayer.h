@@ -5,7 +5,6 @@
 class ofxImageSequencePlayer: public ofImage {
     public:
         ofxImageSequencePlayer() {
-            setUseTexture(false);
         };
         void init(string prefix, int digits, string extension, int start) {
             curFrame = start;
@@ -26,6 +25,7 @@ class ofxImageSequencePlayer: public ofImage {
             {
                 totalFrames++;
                 curFrame++;
+            testFile.close();
             }
             testFile.close();
             curFrame = startFrame;

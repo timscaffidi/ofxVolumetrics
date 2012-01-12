@@ -18,6 +18,7 @@ void testApp::setup()
 
     for(int z=0; z<volDepth; z++)
     {
+        imageSequence.loadFrame(z);
         for(int x=0; x<volWidth; x++)
         {
             for(int y=0; y<volHeight; y++)
@@ -34,14 +35,11 @@ void testApp::setup()
                 volumeData[i4+3] = sample;
             }
         }
-        imageSequence.loadNextFrame();
     }
 
     myVolume.setup(volWidth, volHeight, volDepth, ofVec3f(1,1,2));
     myVolume.updateVolumeData(volumeData,volWidth,volHeight,volDepth,0,0,0);
     myVolume.setRenderSettings(1.0, 1.0, 0.75, 0.1);
-
-    zIndex = 0;
 }
 
 //--------------------------------------------------------------
@@ -67,11 +65,13 @@ void testApp::draw()
     ofSetColor(0,0,0,100);
     ofRect(0,0,270, 90);
     ofSetColor(255,255,255,255);
+
     ofDrawBitmapString("volume dimensions: " + ofToString(myVolume.getVolumeWidth()) + "x" + ofToString(myVolume.getVolumeHeight()) + "x" + ofToString(myVolume.getVolumeDepth()) + "\n" +
                        "FBO quality (q/Q): " + ofToString(myVolume.getRenderWidth()) + "x" + ofToString(myVolume.getRenderHeight()) + "\n" +
                        "Z quality (z/Z):   " + ofToString(myVolume.getZQuality()) + "\n" +
                        "Threshold (t/T):   " + ofToString(myVolume.getThreshold()) + "\n" +
                        "Density (d/D):     " + ofToString(myVolume.getDensity()) + "\n",20,20);
+
 }
 
 //--------------------------------------------------------------

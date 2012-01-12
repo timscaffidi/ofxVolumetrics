@@ -174,7 +174,7 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
     volumeTexture.unbind();
     glActiveTexture(GL_TEXTURE0);
 
-    volumeShader.setUniform3f("vol_d", (float)volWidth-1.0, (float)volHeight-1.0, (float)volDepth-1.0); //dimensions of the volume texture
+    volumeShader.setUniform3f("vol_d", (float)volWidth, (float)volHeight, (float)volDepth); //dimensions of the volume texture
     volumeShader.setUniform2f("bg_d", (float)renderWidth, (float)renderHeight); // dimensions of the background texture
     volumeShader.setUniform1f("zoffset",zTexOffset); // used for animation so that we dont have to upload the entire volume every time
     volumeShader.setUniform1f("quality", quality.z); // 0 ... 1
