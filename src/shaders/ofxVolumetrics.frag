@@ -33,9 +33,9 @@ void main()
             if(color_sample.a > threshold) {
                 float oneMinusAlpha = 1. - col_acc.a;
                 color_sample.a *= aScale;
-                col_acc.rgb = col_acc.rgb * col_acc.a + color_sample.rgb * color_sample.a * oneMinusAlpha;
+                col_acc.rgb = mix(col_acc.rgb, color_sample.rgb * color_sample.a, oneMinusAlpha);
                 col_acc.a += color_sample.a * oneMinusAlpha;
-                col_acc.rgb/=col_acc.a;
+                col_acc.rgb /= col_acc.a;
                 if(col_acc.a >= 1.0) {
                     break; // terminate if opacity > 1
                 }
