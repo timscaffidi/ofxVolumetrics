@@ -39,7 +39,7 @@ void testApp::setup()
 
     myVolume.setup(volWidth, volHeight, volDepth, ofVec3f(1,1,2));
     myVolume.updateVolumeData(volumeData,volWidth,volHeight,volDepth,0,0,0);
-    myVolume.setRenderSettings(1.0, 1.0, 0.75, 0.1);
+    myVolume.setRenderSettings(0.5, 1.0, 0.75, 0.1);
 }
 
 //--------------------------------------------------------------
@@ -70,7 +70,8 @@ void testApp::draw()
                        "FBO quality (q/Q): " + ofToString(myVolume.getRenderWidth()) + "x" + ofToString(myVolume.getRenderHeight()) + "\n" +
                        "Z quality (z/Z):   " + ofToString(myVolume.getZQuality()) + "\n" +
                        "Threshold (t/T):   " + ofToString(myVolume.getThreshold()) + "\n" +
-                       "Density (d/D):     " + ofToString(myVolume.getDensity()) + "\n",20,20);
+                       "Density (d/D):     " + ofToString(myVolume.getDensity()) + "\n" +
+                       "Linear/Nearest filter (l/n)",20,20);
 
 }
 
@@ -104,7 +105,12 @@ void testApp::keyPressed(int key)
     case 'Z':
         myVolume.setZQuality(myVolume.getZQuality()+0.01);
         break;
-
+    case 'l':
+        myVolume.setVolumeTextureFilterMode(GL_LINEAR);
+        break;
+    case 'n':
+        myVolume.setVolumeTextureFilterMode(GL_NEAREST);
+        break;
     }
 
 }
