@@ -9,11 +9,11 @@ uniform float quality;
 uniform float threshold;
 uniform float density;
 
-const vec3 minv = vec3(0.,0.,0.);
-const vec3 maxv = vec3(1.,1.,1.);
-
 void main()
 {
+    vec3 minv = 1./vol_d;//vec3(0.,0.,0.);
+    vec3 maxv = vec3(1.,1.,1.) - minv;
+
     vec4 col_acc = vec4(0,0,0,0);
     vec3 vec = clamp(vec3(gl_TexCoord[0]), minv, maxv); // starting position of the ray
     vec3 zOffsetVec = vec3(0.0,0.0,zoffset/vol_d.z);
