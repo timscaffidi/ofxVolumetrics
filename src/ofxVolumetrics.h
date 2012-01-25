@@ -26,6 +26,7 @@ public:
     int getVolumeWidth();
     int getVolumeHeight();
     int getVolumeDepth();
+    ofFbo & getFboReference();
     int getRenderWidth();
     int getRenderHeight();
     float getXyQuality();
@@ -37,6 +38,7 @@ public:
     void setThreshold(float t);
     void setDensity(float d);
     void setRenderSettings(float xyQuality, float zQuality, float dens, float thresh);
+    void setVolumeTextureFilterMode(GLint filterMode);
 protected:
 private:
     void drawRGBCube();

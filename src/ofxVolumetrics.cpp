@@ -263,6 +263,14 @@ void ofxVolumetrics::setRenderSettings(float xyQuality, float zQuality, float de
     setThreshold(thresh);
 }
 
+void ofxVolumetrics::setVolumeTextureFilterMode(GLint filterMode) {
+    if(filterMode != GL_NEAREST && filterMode != GL_LINEAR) return;
+
+    volumeTexture.bind();
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, filterMode);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, filterMode);
+    volumeTexture.unbind();
+}
 
 bool ofxVolumetrics::isInitialized()
 {
@@ -303,4 +311,7 @@ float ofxVolumetrics::getThreshold()
 float ofxVolumetrics::getDensity()
 {
     return density;
+}
+ofFbo & ofxVolumetrics::getFboReference(){
+    return fboRender;
 }
