@@ -40,6 +40,8 @@ void testApp::setup()
     myVolume.setup(volWidth, volHeight, volDepth, ofVec3f(1,1,2));
     myVolume.updateVolumeData(volumeData,volWidth,volHeight,volDepth,0,0,0);
     myVolume.setRenderSettings(0.5, 1.0, 0.75, 0.1);
+
+    linearFilter = false;
 }
 
 //--------------------------------------------------------------
@@ -71,7 +73,7 @@ void testApp::draw()
                        "Z quality (z/Z):   " + ofToString(myVolume.getZQuality()) + "\n" +
                        "Threshold (t/T):   " + ofToString(myVolume.getThreshold()) + "\n" +
                        "Density (d/D):     " + ofToString(myVolume.getDensity()) + "\n" +
-                       "Linear/Nearest filter (l/n)",20,20);
+                       "Filter mode (l/n): " + (linearFilter?"linear":"nearest"),20,20);
 
 }
 
@@ -107,9 +109,11 @@ void testApp::keyPressed(int key)
         break;
     case 'l':
         myVolume.setVolumeTextureFilterMode(GL_LINEAR);
+        linearFilter = true;
         break;
     case 'n':
         myVolume.setVolumeTextureFilterMode(GL_NEAREST);
+        linearFilter = false;
         break;
     }
 

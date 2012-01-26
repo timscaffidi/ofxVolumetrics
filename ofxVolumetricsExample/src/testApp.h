@@ -26,5 +26,6 @@ public:
     int volWidth, volHeight, volDepth;
     ofImage background;
     ofxImageSequencePlayer imageSequence;
+    bool linearFilter;
 
 };
