@@ -4,6 +4,7 @@
 void testApp::setup()
 {
     ofSetFrameRate(60);
+    background.allocate(1024,768,OF_IMAGE_COLOR);
     background.loadImage("background.png");
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 
@@ -39,9 +40,12 @@ void testApp::setup()
 
     myVolume.setup(volWidth, volHeight, volDepth, ofVec3f(1,1,2));
     myVolume.updateVolumeData(volumeData,volWidth,volHeight,volDepth,0,0,0);
-    myVolume.setRenderSettings(0.5, 1.0, 0.75, 0.1);
+    myVolume.setRenderSettings(0.5, 0.75, 0.75, 0.1);
 
     linearFilter = false;
+    
+    cam.setDistance(1000);
+    cam.enableMouseInput();
 }
 
 //--------------------------------------------------------------
@@ -55,17 +59,13 @@ void testApp::draw()
 {
     ofSetColor(255,255,255,255);
     background.draw(0,0,ofGetWidth(),ofGetHeight());
+    
+    cam.begin();
+    myVolume.drawVolume(0,0,0, ofGetHeight(), 0);
+    cam.end();
 
-    ofPushMatrix();
-    ofTranslate(ofGetWidth()/2, ofGetHeight()/2, -100);
-    ofRotateX(mouseY*-360/(float)ofGetHeight());
-    ofRotateZ(mouseX*360/(float)ofGetWidth());
-
-    myVolume.drawVolume(0,0,0, ofGetHeight()*0.75, 0);
-    ofPopMatrix();
-
-    ofSetColor(0,0,0,100);
-    ofRect(0,0,270, 90);
+    ofSetColor(0,0,0,64);
+    ofRect(0,0,270,90);
     ofSetColor(255,255,255,255);
 
     ofDrawBitmapString("volume dimensions: " + ofToString(myVolume.getVolumeWidth()) + "x" + ofToString(myVolume.getVolumeHeight()) + "x" + ofToString(myVolume.getVolumeDepth()) + "\n" +

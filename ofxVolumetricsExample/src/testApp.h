@@ -21,6 +21,8 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
 
+    ofEasyCam cam;
+    
     ofxVolumetrics myVolume;
     unsigned char * volumeData;
     int volWidth, volHeight, volDepth;
