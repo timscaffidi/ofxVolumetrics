@@ -90,7 +90,6 @@ void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize)
     volWidth = renderWidth = w;
     volHeight = renderHeight = h;
     volDepth = d;
-    fboFrontFace.allocate(w, h, GL_RGBA);
     fboRender.allocate(w, h, GL_RGBA);
     volumeTexture.allocate(w, h, d, GL_RGBA);
     voxelRatio = voxelSize;
@@ -130,41 +129,20 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
     updateRenderDimentions();
 
     ofVec3f cubeSize = ofVec3f(w, h, d);
-    
+
     GLfloat modl[16], proj[16];
     glGetFloatv( GL_MODELVIEW_MATRIX, modl);
     glGetFloatv(GL_PROJECTION_MATRIX, proj);
     GLint color[4];
     glGetIntegerv(GL_CURRENT_COLOR, color);
-    
+
     ofVec3f scale,t;
     ofQuaternion a,b;
-    
-    ofMatrix4x4(modl).decompose(t, a, scale, b);    
+    ofMatrix4x4(modl).decompose(t, a, scale, b);
+
     GLint cull_mode;
     glGetIntegerv(GL_FRONT_FACE, &cull_mode);
     GLint cull_mode_fbo = (scale.x*scale.y*scale.z) > 0 ? GL_CCW : GL_CW;
-
-    /* render front face */
-    fboFrontFace.begin();
-    ofClear(0,0,0,0);
-
-    //load matricies from outside the FBO
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixf(proj);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(modl);
-
-    ofTranslate(x-cubeSize.x/2, y-cubeSize.y/2, z-cubeSize.z/2);
-    ofScale(cubeSize.x,cubeSize.y,cubeSize.z);
-    
-    glFrontFace(cull_mode_fbo);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    drawRGBCube();
-    glDisable(GL_CULL_FACE);
-    glFrontFace(cull_mode);
-    fboFrontFace.end();
 
     /* raycasting pass */
     fboRender.begin();
@@ -181,8 +159,6 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
     ofScale(cubeSize.x,cubeSize.y,cubeSize.z);
 
     //pass variables to the shader
-    volumeShader.setUniformTexture("frontface", fboFrontFace.getTextureReference(), 0);
-
     glActiveTexture(GL_TEXTURE1);
     volumeTexture.bind();
     volumeShader.setUniform1i("volume_tex", 1); // volume texture reference
@@ -195,7 +171,7 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
     volumeShader.setUniform1f("quality", quality.z); // 0 ... 1
     volumeShader.setUniform1f("density", density); // 0 ... 1
     volumeShader.setUniform1f("threshold", threshold);//(float)mouseX/(float)ofGetWidth());
-    
+
     glFrontFace(cull_mode_fbo);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
@@ -205,7 +181,7 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 
     volumeShader.end();
     fboRender.end();
-    
+
     ofPushView();
 
     glColor4iv(color);
@@ -242,7 +218,6 @@ void ofxVolumetrics::updateRenderDimentions()
     {
         renderWidth = ofGetWidth()*quality.x;
         renderHeight = ofGetHeight()*quality.x;
-        fboFrontFace.allocate(renderWidth, renderHeight, GL_RGBA);
         fboRender.allocate(renderWidth, renderHeight, GL_RGBA);
     }
 }
@@ -250,13 +225,13 @@ void ofxVolumetrics::updateRenderDimentions()
 void ofxVolumetrics::setXyQuality(float q)
 {
     float oldQuality = quality.x;
-    quality.x = ofClamp(q,0.0,1.0);
+    quality.x = MAX(q,0.01);
 
     updateRenderDimentions();
 }
 void ofxVolumetrics::setZQuality(float q)
 {
-    quality.z = ofClamp(q,0.0,2.0);
+    quality.z = MAX(q,0.01);
 }
 void ofxVolumetrics::setThreshold(float t)
 {
@@ -264,7 +239,7 @@ void ofxVolumetrics::setThreshold(float t)
 }
 void ofxVolumetrics::setDensity(float d)
 {
-    density = ofClamp(d,0.0,10.0);
+    density = MAX(d,0.0);
 }
 void ofxVolumetrics::setRenderSettings(float xyQuality, float zQuality, float dens, float thresh)
 {

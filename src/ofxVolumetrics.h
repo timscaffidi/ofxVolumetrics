@@ -44,7 +44,7 @@ private:
     void drawRGBCube();
     void updateRenderDimentions();
 
-    ofFbo fboFrontFace, fboRender;
+    ofFbo fboRender;
     ofShader volumeShader;
     ofxTexture3d volumeTexture;
     //ofMesh volumeMesh; //unfortunately this only supports 2d texture coordinates at the moment.
