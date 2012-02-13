@@ -28,7 +28,7 @@ void main()
         vec = cameraPosition + lookVec * max(abs(length((frontTexSample.xyz*maxv+minv) - cameraPosition)),0.15);
     }
 
-    vec3 dir = clamp(backPos,minv,maxv)-clamp(vec,minv,maxv); // starting position of the ray
+    vec3 dir = clamp(backPos,minv,maxv) - clamp(vec,minv,maxv); // starting position of the ray
 
     if(dir!= vec3(0.,0.,0.)) {
         float steps = floor(length(vol_d * dir) * quality);
@@ -37,7 +37,7 @@ void main()
         float aScale =  density/quality;
 
         //raycast
-        for(int i = 2; i < int(steps); i++)
+        for(int i = 0; i < int(steps); i++)
         {
             color_sample = texture3D(volume_tex, vec + zOffsetVec);
             if(color_sample.a > threshold) {
