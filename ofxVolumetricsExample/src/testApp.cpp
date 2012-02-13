@@ -43,7 +43,7 @@ void testApp::setup()
     myVolume.setRenderSettings(0.5, 0.75, 0.75, 0.1);
 
     linearFilter = false;
-    
+
     cam.setDistance(1000);
     cam.enableMouseInput();
 }
@@ -59,7 +59,7 @@ void testApp::draw()
 {
     ofSetColor(255,255,255,255);
     background.draw(0,0,ofGetWidth(),ofGetHeight());
-    
+
     cam.begin();
     myVolume.drawVolume(0,0,0, ofGetHeight(), 0);
     cam.end();
@@ -114,6 +114,18 @@ void testApp::keyPressed(int key)
     case 'n':
         myVolume.setVolumeTextureFilterMode(GL_NEAREST);
         linearFilter = false;
+        break;
+    case OF_KEY_UP:
+        cam.getTarget().boom(-5);
+        break;
+    case OF_KEY_DOWN:
+        cam.getTarget().boom(5);
+        break;
+    case OF_KEY_LEFT:
+        cam.getTarget().truck(-5);
+        break;
+    case OF_KEY_RIGHT:
+        cam.getTarget().truck(5);
         break;
     }
 
