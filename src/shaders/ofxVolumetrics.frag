@@ -8,6 +8,7 @@ uniform float zoffset;
 uniform float quality;
 uniform float threshold;
 uniform float density;
+uniform bool enable_lighting;
 
 struct Ray {
     vec3 Origin;
@@ -46,6 +47,10 @@ void main()
     vec3 zOffsetVec = vec3(0.0,0.0,zoffset/vold.z);
     vec3 backPos = gl_TexCoord[0].xyz;//*maxv+minv;
     vec3 lookVec = normalize(backPos - cameraPosition);
+    
+    vec3 light_pos = vec3(0.75, 0.1, .05);
+    const vec4 light_color = vec4(1.0);
+    const float light_intensity = 5.0;
 
 
     Ray eye = Ray( cameraPosition, lookVec);
@@ -73,6 +78,22 @@ void main()
         {
             color_sample = texture3D(volume_tex, vec + zOffsetVec);
             if(color_sample.a > threshold) {
+                
+                if(enable_lighting) {
+                    vec4 light = light_intensity*light_color/vec4(distance(vec,light_pos));
+                    vec3 light_vec = vec;
+                    int light_steps = int(steps)/2;
+                    vec3 light_step = (light_pos - vec)/float(light_steps);
+                    for(int l=0;l<light_steps;l++) {
+                        vec4 light_sample = texture3D(volume_tex, light_vec + zOffsetVec);
+                        if(light_sample.a > threshold){
+                            light *= vec4(1.)-light_sample * aScale*0.5;
+                        }
+                        light_vec += light_step;
+                        if(light.a <= 0.0 || light_vec != clamp(light_vec,minv,maxv)) break;
+                    }
+                    color_sample.rgb *= light.a;
+                }
 
                 float oneMinusAlpha = 1. - col_acc.a;
                 color_sample.a *= aScale;
