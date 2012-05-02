@@ -1,4 +1,4 @@
-The code in this repository is available under the [MIT License](https://secure.wikimedia.org/wikipedia/en/wiki/Mit_license). This has no effect on Jason's code, which is available under a separate license.
+ofxVolumetrics is available under the [MIT License](https://secure.wikimedia.org/wikipedia/en/wiki/Mit_license). 
 
 Copyright (c) 2012 - Timothy Scaffidi
 
