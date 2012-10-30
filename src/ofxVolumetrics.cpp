@@ -3,7 +3,7 @@
 
 ofxVolumetrics::ofxVolumetrics()
 {
-    quality = 1.0;
+    quality = ofVec3f(1.0);
     threshold = 1.0/255.0;
     density = 1.0;
     volWidth = renderWidth = 0;
