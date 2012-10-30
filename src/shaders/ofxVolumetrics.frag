@@ -68,6 +68,9 @@ void main()
         vec4 color_sample;
         float aScale =  density/quality;
 
+        float random = fract(sin(gl_FragCoord.x * 12.9898 + gl_FragCoord.y * 78.233) * 43758.5453);
+        vec += delta_dir * random;
+
         //raycast
         for(int i = 0; i < int(steps); i++)
         {
