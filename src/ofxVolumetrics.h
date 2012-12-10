@@ -17,7 +17,7 @@ class ofxVolumetrics
 public:
     ofxVolumetrics();
     virtual ~ofxVolumetrics();
-    void setup(int w, int h, int d, ofVec3f voxelSize);
+    void setup(int w, int h, int d, ofVec3f voxelSize, bool usePowerOfTwoTexSize=false);
     void destroy();
     void updateVolumeData(unsigned char * data, int w, int h, int d, int xOffset, int yOffset, int zOffset);
     void drawVolume(float x, float y, float z, float size, int zTexOffset);
@@ -53,6 +53,8 @@ private:
     ofVec3f voxelRatio;
     bool bIsInitialized;
     int volWidth, volHeight, volDepth;
+    int volWidthPOT, volHeightPOT, volDepthPOT;
+    bool bIsPowerOfTwo;
     ofVec3f quality;
     float threshold;
     float density;

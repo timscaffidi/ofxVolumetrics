@@ -86,7 +86,7 @@ ofxVolumetrics::~ofxVolumetrics()
     destroy();
 }
 
-void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize)
+void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize, bool usePowerOfTwoTexSize)
 {
     string vertexShader = STRINGIFY(
                                     varying vec3 cameraPosition;
@@ -102,6 +102,7 @@ void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize)
 
                                         uniform sampler3D volume_tex;
                                         uniform vec3 vol_d;
+                                        uniform vec3 vol_d_pot;
                                         uniform vec2 bg_d;
                                         uniform float zoffset;
                                         uniform float quality;
@@ -135,35 +136,36 @@ void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize)
                                         void main()
                                         {
 
-                                            vec3 minv = vec3(0.)+1./vol_d;
-                                            vec3 maxv = vec3(1.)-1./vol_d;
+                                            vec3 minv = vec3(0.)+1./vol_d_pot;
+                                            vec3 maxv = (vol_d/vol_d_pot)-1./vol_d_pot;
                                             vec3 vec;
                                             vec3 vold = (maxv-minv)*vol_d;
                                             float vol_l = length(vold);
 
                                             vec4 col_acc = vec4(0,0,0,0);
-                                            vec3 zOffsetVec = vec3(0.0,0.0,zoffset/vold.z);
-                                            vec3 backPos = gl_TexCoord[0].xyz;//*maxv+minv;
+                                            vec3 zOffsetVec = vec3(0.0,0.0,zoffset/vol_d_pot.z);
+                                            vec3 backPos = gl_TexCoord[0].xyz;
                                             vec3 lookVec = normalize(backPos - cameraPosition);
 
 
                                             Ray eye = Ray( cameraPosition, lookVec);
-                                            BoundingBox box = BoundingBox(minv, maxv);
+                                            BoundingBox box = BoundingBox(vec3(0.),vec3(1.));
 
                                             float tnear, tfar;
                                             IntersectBox(eye, box, tnear, tfar);
-                                            if (tnear < 0.15) tnear = 0.15;
+                                            if(tnear < 0.15) tnear = 0.15;
                                             if(tnear > tfar) discard;
 
-                                            vec3 rayStart = eye.Origin + eye.Dir * tnear;
-                                            vec3 rayStop = eye.Origin + eye.Dir * tfar;
+                                            vec3 rayStart = (eye.Origin + eye.Dir * tnear)*(maxv-minv)+minv;//vol_d/vol_d_pot;
+                                            vec3 rayStop = (eye.Origin + eye.Dir * tfar)*(maxv-minv)+minv;//vol_d/vol_d_pot;
 
                                             vec3 dir = rayStop - rayStart; // starting position of the ray
+
                                             vec = rayStart;
                                             float dl = length(dir);
                                             if(dl == clamp(dl,0.,vol_l)) {
-                                                float steps = floor(length(vold * dir) * quality);
-                                                vec3 delta_dir = dir/steps;
+                                                int steps = int(floor(length(vold * dir) * quality));
+                                                vec3 delta_dir = dir/float(steps);
                                                 vec4 color_sample;
                                                 float aScale =  density/quality;
 
@@ -171,9 +173,11 @@ void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize)
                                                 vec += delta_dir * random;
 
                                                 //raycast
-                                                for(int i = 0; i < int(steps); i++)
+                                                for(int i = 0; i < steps; i++)
                                                 {
-                                                    color_sample = texture3D(volume_tex, vec + zOffsetVec);
+                                                    vec3 vecz = vec + zOffsetVec;
+                                                    if(vecz.z > maxv.z) vecz.z-=maxv.z;
+                                                    color_sample = texture3D(volume_tex, vecz);
                                                     if(color_sample.a > threshold) {
 
                                                         float oneMinusAlpha = 1. - col_acc.a;
@@ -189,7 +193,8 @@ void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize)
                                                 }
                                             }
                                             // export the rendered color
-                                            gl_FragColor = col_acc;//vec4(abs(rayStop-rayStart),1.);
+                                            gl_FragColor = col_acc;
+
                                         } )); // END FRAGMENT SHADER STRINGIFY
 
     // For whatever reason, the stringify macro takes the fragment shader code as 2 arguments,
@@ -201,11 +206,29 @@ void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize)
     volumeShader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragmentShader);
     volumeShader.linkProgram();
 
-    volWidth = renderWidth = w;
-    volHeight = renderHeight = h;
-    volDepth = d;
+    bIsPowerOfTwo = usePowerOfTwoTexSize;
+
+    volWidthPOT = volWidth = renderWidth = w;
+    volHeightPOT = volHeight = renderHeight = h;
+    volDepthPOT = volDepth = d;
+
+    if(bIsPowerOfTwo){
+        volWidthPOT = ofNextPow2(w);
+        volHeightPOT = ofNextPow2(h);
+        volDepthPOT = ofNextPow2(d);
+
+        ofLogVerbose() << "ofxVolumetrics::setup(): Using power of two texture size. Requested: " << w << "x" <<h<<"x"<<d<<". Actual: " << volWidthPOT<<"x"<<volHeightPOT<<"x"<<volDepthPOT<<".\n";
+    }
+
     fboRender.allocate(w, h, GL_RGBA);
-    volumeTexture.allocate(w, h, d, GL_RGBA);
+    volumeTexture.allocate(volWidthPOT, volHeightPOT, volDepthPOT, GL_RGBA);
+    if(bIsPowerOfTwo){
+        // if using cropped power of two, blank out the extra memory
+        unsigned char * d;
+        d = new unsigned char[volWidthPOT*volHeightPOT*volDepthPOT*4];
+        memset(d,0,volWidthPOT*volHeightPOT*volDepthPOT*4);
+        volumeTexture.loadData(d,volWidthPOT, volHeightPOT, volDepthPOT, 0,0,0,GL_RGBA);
+    }
     voxelRatio = voxelSize;
 
     bIsInitialized = true;
@@ -280,6 +303,7 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
     glActiveTexture(GL_TEXTURE0);
 
     volumeShader.setUniform3f("vol_d", (float)volWidth, (float)volHeight, (float)volDepth); //dimensions of the volume texture
+    volumeShader.setUniform3f("vol_d_pot", (float)volWidthPOT, (float)volHeightPOT, (float)volDepthPOT); //dimensions of the volume texture power of two
     volumeShader.setUniform2f("bg_d", (float)renderWidth, (float)renderHeight); // dimensions of the background texture
     volumeShader.setUniform1f("zoffset",zTexOffset); // used for animation so that we dont have to upload the entire volume every time
     volumeShader.setUniform1f("quality", quality.z); // 0 ... 1

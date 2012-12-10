@@ -4,6 +4,7 @@
 void testApp::setup()
 {
     ofSetFrameRate(60);
+    ofSetLogLevel(OF_LOG_VERBOSE);
     background.allocate(1024,768,OF_IMAGE_COLOR);
     background.loadImage("background.png");
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
@@ -38,9 +39,9 @@ void testApp::setup()
         }
     }
 
-    myVolume.setup(volWidth, volHeight, volDepth, ofVec3f(1,1,2));
+    myVolume.setup(volWidth, volHeight, volDepth, ofVec3f(1,1,2),true);
     myVolume.updateVolumeData(volumeData,volWidth,volHeight,volDepth,0,0,0);
-    myVolume.setRenderSettings(0.5, 0.75, 0.75, 0.1);
+    myVolume.setRenderSettings(1.0, 1.0, 0.75, 0.1);
 
     linearFilter = false;
 
