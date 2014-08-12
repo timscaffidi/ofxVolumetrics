@@ -10,6 +10,8 @@ void testApp::setup()
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 
     imageSequence.init("volumes/head/cthead-8bit",3,".tif", 1);
+    ofVec3f vol_size(1.0,1.0,2.0);
+
     volWidth = imageSequence.getWidth();
     volHeight = imageSequence.getHeight();
     volDepth = imageSequence.getSequenceLength();
@@ -29,7 +31,7 @@ void testApp::setup()
                 int i4 = ((x+volWidth*y)+z*volWidth*volHeight)*4;
                 int sample = imageSequence.getPixels()[x+y*volWidth];
                 ofColor c;
-                c.setHsb(sample, 255-sample, sample);
+                c.setHsb(sample, 255-sample, 255);
 
                 volumeData[i4] = c.r;
                 volumeData[i4+1] = c.g;
@@ -39,7 +41,7 @@ void testApp::setup()
         }
     }
 
-    myVolume.setup(volWidth, volHeight, volDepth, ofVec3f(1,1,2),true);
+    myVolume.setup(volWidth, volHeight, volDepth, vol_size,true);
     myVolume.updateVolumeData(volumeData,volWidth,volHeight,volDepth,0,0,0);
     myVolume.setRenderSettings(1.0, 1.0, 0.75, 0.1);
 

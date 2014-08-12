@@ -133,6 +133,31 @@ void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize, bool usePower
                                             return t0 <= t1;
                                         }
 
+                                        float calcDiffuseLighting(vec3 pos, vec4 sample, vec3 look, float old_val)
+                                        {
+                                            vec3 grad = vec3(0.0, 0.0, 0.0);
+
+                                            // right
+                                            grad += (texture3D(volume_tex, pos + vec3(1.0, 0.0, 0.0)/vol_d_pot).a - sample.a) * vec3(1.0, 0.0, 0.0);
+                                            // left
+                                            grad += (texture3D(volume_tex, pos + vec3(-1.0, 0.0, 0.0)/vol_d_pot).a - sample.a) * vec3(-1.0, 0.0, 0.0);
+                                            // up
+                                            grad += (texture3D(volume_tex, pos + vec3(0.0, 1.0, 0.0)/vol_d_pot).a - sample.a) * vec3(0.0, 1.0, 0.0);
+                                            // down
+                                            grad += (texture3D(volume_tex, pos + vec3(0.0, -1.0, 0.0)/vol_d_pot).a - sample.a) * vec3(0.0, -1.0, 0.0);
+                                            // forward
+                                            grad += (texture3D(volume_tex, pos + vec3(0.0, 0.0, 1.0)/vol_d_pot).a - sample.a) * vec3(0.0, 0.0, 1.0);
+                                            // backward
+                                            grad += (texture3D(volume_tex, pos + vec3(0.0, 0.0, -1.0)/vol_d_pot).a - sample.a) * vec3(0.0, 0.0, -1.0);
+
+                                            if(length(grad) == 0.0)
+                                            {
+                                                return old_val;
+                                            }
+
+                                            return max(dot(normalize(grad), normalize(look)), 0.0);
+                                        }
+
                                         void main()
                                         {
 
@@ -171,6 +196,7 @@ void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize, bool usePower
 
                                                 float random = fract(sin(gl_FragCoord.x * 12.9898 + gl_FragCoord.y * 78.233) * 43758.5453);
                                                 vec += delta_dir * random;
+                                                float diffuse = 1.0;
 
                                                 //raycast
                                                 for(int i = 0; i < steps; i++)
@@ -179,9 +205,10 @@ void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize, bool usePower
                                                     if(vecz.z > maxv.z) vecz.z-=maxv.z;
                                                     color_sample = texture3D(volume_tex, vecz);
                                                     if(color_sample.a > threshold) {
-
+                                                        diffuse = calcDiffuseLighting(vecz, color_sample, dir, diffuse);
                                                         float oneMinusAlpha = 1. - col_acc.a;
                                                         color_sample.a *= aScale;
+                                                        color_sample.rgb = color_sample.rgb * (diffuse + 0.125);
                                                         col_acc.rgb = mix(col_acc.rgb, color_sample.rgb * color_sample.a, oneMinusAlpha);
                                                         col_acc.a += color_sample.a * oneMinusAlpha;
                                                         col_acc.rgb /= col_acc.a;
@@ -192,9 +219,9 @@ void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize, bool usePower
                                                     vec += delta_dir;
                                                 }
                                             }
+
                                             // export the rendered color
                                             gl_FragColor = col_acc;
-
                                         } )); // END FRAGMENT SHADER STRINGIFY
 
     // For whatever reason, the stringify macro takes the fragment shader code as 2 arguments,
@@ -362,7 +389,6 @@ void ofxVolumetrics::updateRenderDimentions()
 
 void ofxVolumetrics::setXyQuality(float q)
 {
-    float oldQuality = quality.x;
     quality.x = MAX(q,0.01);
 
     updateRenderDimentions();
