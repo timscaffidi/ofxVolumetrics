@@ -376,9 +376,15 @@ void ofxVolumetrics::setVolumeTextureFilterMode(GLint filterMode) {
     if(filterMode != GL_NEAREST && filterMode != GL_LINEAR) return;
 
     volumeTexture.bind();
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, filterMode);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, filterMode);
+#ifdef OFX_VOLUMETRICS_EMULATE_3D_TEXTURE
+    GLint target = GL_TEXTURE_2D;
+#else
+    GLint target = GL_TEXTURE_3D;
+#endif
+    glTexParameteri(target GL_TEXTURE_MIN_FILTER, filterMode);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filterMode);
     volumeTexture.unbind();
+
 }
 
 bool ofxVolumetrics::isInitialized()
