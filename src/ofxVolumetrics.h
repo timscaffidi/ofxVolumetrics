@@ -1,15 +1,28 @@
 #pragma once
 
-/*      ofxVolumetrics - render volumetric data on the GPU
+/* ofxVolumetrics - render volumetric data on the GPU
 
  Written by Timothy Scaffidi (http://timothyscaffidi.com)
  Volumetric rendering algorithm adapted from Peter Trier (http://www.daimi.au.dk/~trier/?page_id=98)
 
 */
+#include "ofMain.h"
+
+#ifndef OFX_VOLUMETRICS_EMULATE_3D_TEXTURE
+    #ifndef GL_TEXTURE_3D
+       #define OFX_VOLUMETRICS_EMULATE_3D_TEXTURE
+    #endif
+#endif
 
 #include "ofFbo.h"
 #include "ofShader.h"
-#include "ofxTexture3d.h"
+
+#ifdef OFX_VOLUMETRICS_EMULATE_3D_TEXTURE
+    #include "ofxTexture2d.h"
+ #else
+    #include "ofxTexture3d.h"
+#endif
+
 #include "ofxImageSequencePlayer.h"
 
 class ofxVolumetrics
@@ -46,14 +59,21 @@ private:
 
     ofFbo fboRender;
     ofShader volumeShader;
+    GLint gl_max_tex_size;
+#ifndef OFX_VOLUMETRICS_EMULATE_3D_TEXTURE
+    GLint gl_max_tex_3d_depth;
     ofxTexture3d volumeTexture;
+#else
+    ofxTexture2d volumeTexture;
+    unsigned int numFramesX, numFramesY;
+#endif
     //ofMesh volumeMesh; //unfortunately this only supports 2d texture coordinates at the moment.
     ofVec3f volVerts[24];
     ofVec3f volNormals[24];
     ofVec3f voxelRatio;
     bool bIsInitialized;
     int volWidth, volHeight, volDepth;
-    int volWidthPOT, volHeightPOT, volDepthPOT;
+    int volTexWidth, volTexHeight, volTexDepth;
     bool bIsPowerOfTwo;
     ofVec3f quality;
     float threshold;

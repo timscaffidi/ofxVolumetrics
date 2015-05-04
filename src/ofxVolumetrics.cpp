@@ -2,7 +2,8 @@
 
 #include "ofxVolumetrics.h"
 #include "ofMain.h"
-#define STRINGIFY( A) #A
+
+#define STRINGIFY(A) #A
 ofxVolumetrics::ofxVolumetrics()
 {
     quality = ofVec3f(1.0);
@@ -12,6 +13,17 @@ ofxVolumetrics::ofxVolumetrics()
     volHeight = renderHeight = 0;
     volDepth = 0;
     bIsInitialized = false;
+
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &gl_max_tex_size);
+    ofLogNotice() << "ofxVolumetrics: GL_MAX_TEXTURE_SIZE = " << gl_max_tex_size;
+
+#ifdef OFX_VOLUMETRICS_EMULATE_3D_TEXTURE
+    ofDisableArbTex();
+    ofLogNotice() << "ofxVolumetrics: GL_TEXTURE_3D not supported in this build, using 3D texture emulation.";
+#else
+    glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &gl_max_tex_3d_depth);
+    ofLogNotice() << "ofxVolumetrics: GL_MAX_3D_TEXTURE_SIZE = " << gl_max_tex_3d_depth;
+#endif
 
     /* Front side */
     volNormals[0] = ofVec3f(0.0, 0.0, 1.0);
@@ -88,148 +100,103 @@ ofxVolumetrics::~ofxVolumetrics()
 
 void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize, bool usePowerOfTwoTexSize)
 {
-    string vertexShader = STRINGIFY(
-                                    varying vec3 cameraPosition;
-                                    void main()
-                                    {
-                                        gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-                                        gl_TexCoord[0] = gl_MultiTexCoord0; //poop
-                                        cameraPosition = (gl_ModelViewMatrixInverse * vec4(0.,0.,0.,1.)).xyz;
-                                    }); // END VERTEX SHADER STRINGIFY
+    string vertexShader = 
+#ifdef OFX_VOLUMETRICS_EMULATE_3D_TEXTURE
+    #include "shaders/gles2/vert.glsl"
+#else
+    #include "shaders/gl/vert.glsl"
+#endif
 
-    string fragmentShader = STRINGIFY((#extension GL_ARB_texture_rectangle : enable \n
-                                        varying vec3 cameraPosition;
+    string fragmentShader = 
+#ifdef OFX_VOLUMETRICS_EMULATE_3D_TEXTURE
+    #include "shaders/gles2/frag.glsl"
+#else
+    #include "shaders/gl/frag.glsl"
+#endif
 
-                                        uniform sampler3D volume_tex;
-                                        uniform vec3 vol_d;
-                                        uniform vec3 vol_d_pot;
-                                        uniform vec2 bg_d;
-                                        uniform float zoffset;
-                                        uniform float quality;
-                                        uniform float threshold;
-                                        uniform float density;
-
-                                        struct Ray {
-                                            vec3 Origin;
-                                            vec3 Dir;
-                                        };
-
-                                        struct BoundingBox {
-                                            vec3 Min;
-                                            vec3 Max;
-                                        };
-
-                                        bool IntersectBox(Ray r, BoundingBox box, out float t0, out float t1)
-                                        {
-                                            vec3 invR = 1.0 / r.Dir;
-                                            vec3 tbot = invR * (box.Min-r.Origin);
-                                            vec3 ttop = invR * (box.Max-r.Origin);
-                                            vec3 tmin = min(ttop, tbot);
-                                            vec3 tmax = max(ttop, tbot);
-                                            vec2 t = max(tmin.xx, tmin.yz);
-                                            t0 = max(t.x, t.y);
-                                            t = min(tmax.xx, tmax.yz);
-                                            t1 = min(t.x, t.y);
-                                            return t0 <= t1;
-                                        }
-
-                                        void main()
-                                        {
-
-                                            vec3 minv = vec3(0.)+1./vol_d_pot;
-                                            vec3 maxv = (vol_d/vol_d_pot)-1./vol_d_pot;
-                                            vec3 vec;
-                                            vec3 vold = (maxv-minv)*vol_d;
-                                            float vol_l = length(vold);
-
-                                            vec4 col_acc = vec4(0,0,0,0);
-                                            vec3 zOffsetVec = vec3(0.0,0.0,zoffset/vol_d_pot.z);
-                                            vec3 backPos = gl_TexCoord[0].xyz;
-                                            vec3 lookVec = normalize(backPos - cameraPosition);
-
-
-                                            Ray eye = Ray( cameraPosition, lookVec);
-                                            BoundingBox box = BoundingBox(vec3(0.),vec3(1.));
-
-                                            float tnear, tfar;
-                                            IntersectBox(eye, box, tnear, tfar);
-                                            if(tnear < 0.15) tnear = 0.15;
-                                            if(tnear > tfar) discard;
-
-                                            vec3 rayStart = (eye.Origin + eye.Dir * tnear)*(maxv-minv)+minv;//vol_d/vol_d_pot;
-                                            vec3 rayStop = (eye.Origin + eye.Dir * tfar)*(maxv-minv)+minv;//vol_d/vol_d_pot;
-
-                                            vec3 dir = rayStop - rayStart; // starting position of the ray
-
-                                            vec = rayStart;
-                                            float dl = length(dir);
-                                            if(dl == clamp(dl,0.,vol_l)) {
-                                                int steps = int(floor(length(vold * dir) * quality));
-                                                vec3 delta_dir = dir/float(steps);
-                                                vec4 color_sample;
-                                                float aScale =  density/quality;
-
-                                                float random = fract(sin(gl_FragCoord.x * 12.9898 + gl_FragCoord.y * 78.233) * 43758.5453);
-                                                vec += delta_dir * random;
-
-                                                //raycast
-                                                for(int i = 0; i < steps; i++)
-                                                {
-                                                    vec3 vecz = vec + zOffsetVec;
-                                                    if(vecz.z > maxv.z) vecz.z-=maxv.z;
-                                                    color_sample = texture3D(volume_tex, vecz);
-                                                    if(color_sample.a > threshold) {
-
-                                                        float oneMinusAlpha = 1. - col_acc.a;
-                                                        color_sample.a *= aScale;
-                                                        col_acc.rgb = mix(col_acc.rgb, color_sample.rgb * color_sample.a, oneMinusAlpha);
-                                                        col_acc.a += color_sample.a * oneMinusAlpha;
-                                                        col_acc.rgb /= col_acc.a;
-                                                        if(col_acc.a >= 1.0) {
-                                                            break; // terminate if opacity > 1
-                                                        }
-                                                    }
-                                                    vec += delta_dir;
-                                                }
-                                            }
-                                            // export the rendered color
-                                            gl_FragColor = col_acc;
-
-                                        } )); // END FRAGMENT SHADER STRINGIFY
-
-    // For whatever reason, the stringify macro takes the fragment shader code as 2 arguments,
-    // wrapping it in () makes it compile, so trim them off
-    fragmentShader = fragmentShader.substr(1,fragmentShader.size()-2);
+    voxelRatio = voxelSize;
+    bIsPowerOfTwo = usePowerOfTwoTexSize;
 
     volumeShader.unload();
     volumeShader.setupShaderFromSource(GL_VERTEX_SHADER, vertexShader);
     volumeShader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragmentShader);
     volumeShader.linkProgram();
 
-    bIsPowerOfTwo = usePowerOfTwoTexSize;
+    fboRender.allocate(w, h, GL_RGBA);
 
-    volWidthPOT = volWidth = renderWidth = w;
-    volHeightPOT = volHeight = renderHeight = h;
-    volDepthPOT = volDepth = d;
+#ifdef OFX_VOLUMETRICS_EMULATE_3D_TEXTURE
+// using emulated 3D textures
 
-    if(bIsPowerOfTwo){
-        volWidthPOT = ofNextPow2(w);
-        volHeightPOT = ofNextPow2(h);
-        volDepthPOT = ofNextPow2(d);
+    // find out how many frames we can fit in x dimension
+    unsigned int maxNumFramesX = gl_max_tex_size / w;
+    ofLogVerbose() << "ofxVolumetrics: maximum number of frames at " << w << " pixels wide in the X dimension is " << maxNumFramesX;
 
-        ofLogVerbose() << "ofxVolumetrics::setup(): Using power of two texture size. Requested: " << w << "x" <<h<<"x"<<d<<". Actual: " << volWidthPOT<<"x"<<volHeightPOT<<"x"<<volDepthPOT<<".\n";
+    // find out how many frames we can fit in y dimension
+    unsigned int maxNumFramesY = gl_max_tex_size / h;
+    ofLogVerbose() << "ofxVolumetrics: maximum number of frames at " << h << " pixels tall in the Y dimension is " << maxNumFramesY;
+
+    unsigned int maxNumFrames = maxNumFramesX * maxNumFramesY;
+    ofLogVerbose() << "ofxVolumetrics: maximum emulated 3D texture size for requested width and height is (" << w << "," << h << "," << maxNumFrames <<")";
+
+    if (d > maxNumFrames) {
+        ofLogError() << "ofxVolumetrics: tried to allocate emulated 3d texture with dimensions (" << w << "," << h << "," << d << "), but maximum frames at " << w << "x" << h << " is " << maxNumFrames;
+        std::exit(1);
     }
 
-    fboRender.allocate(w, h, GL_RGBA);
-    volumeTexture.allocate(volWidthPOT, volHeightPOT, volDepthPOT, GL_RGBA);
+    numFramesX = min(maxNumFramesX, (unsigned int)d);
+    ofLogVerbose() << "ofxVolumetrics: emulated texture will be " << numFramesX << " frames wide";
+
+    numFramesY = d / numFramesX;
+    if (d % numFramesX > 0) {
+        numFramesY++;
+    }
+
+    ofLogVerbose() << "ofxVolumetrics: emulated texture will be " << numFramesY << " frames tall";
+
+    volWidth = renderWidth = w;
+    volHeight = renderHeight = h;
+    volDepth = d;
+    volTexWidth = w * numFramesX;
+    volTexHeight = h * numFramesY;
+    volTexDepth = 1;
+
+    if(bIsPowerOfTwo){
+        volTexWidth = ofNextPow2(volTexWidth);
+        volTexHeight = ofNextPow2(volTexHeight);
+
+        ofLogVerbose() << "ofxVolumetrics::setup(): Using power of two texture size.";
+    }
+    ofLogVerbose() << "ofxVolumetrics: Emulated 3D texutre size: " << volTexWidth << "x" << volTexHeight;
+    volumeTexture.allocate(volTexWidth, volTexHeight, GL_RGBA);
+
+#else 
+// using real 3D textures
+    volTexWidth = volWidth = renderWidth = w;
+    volTexHeight = volHeight = renderHeight = h;
+    volTexDepth = volDepth = d;
+
+    if(bIsPowerOfTwo){
+        volTexWidth = ofNextPow2(volTexWidth);
+        volTexHeight = ofNextPow2(volTexHeight);
+        volTexDepth = ofNextPow2(volTexDepth);
+
+        ofLogVerbose() << "ofxVolumetrics::setup(): Using power of two texture size. Requested: " << w << "x" <<h<<"x"<<d<<". Actual: " << volTexWidth<<"x"<<volTexHeight<<"x"<<volTexDepth;
+    }
+
+    volumeTexture.allocate(volTexWidth, volTexHeight, volTexDepth, GL_RGBA);
+
     if(bIsPowerOfTwo){
         // if using cropped power of two, blank out the extra memory
         unsigned char * d;
-        d = new unsigned char[volWidthPOT*volHeightPOT*volDepthPOT*4];
-        memset(d,0,volWidthPOT*volHeightPOT*volDepthPOT*4);
-        volumeTexture.loadData(d,volWidthPOT, volHeightPOT, volDepthPOT, 0,0,0,GL_RGBA);
+        d = new unsigned char[volTexWidth*volTexHeight*volTexDepth*4];
+        memset(d,0,volTexWidth*volTexHeight*volTexDepth*4);
+        volumeTexture.loadData(d,volTexWidth, volTexHeight, volTexDepth, 0,0,0,GL_RGBA);
+
+        // free the memory used to blank the texture
+        delete [] d;
     }
-    voxelRatio = voxelSize;
+
+#endif
 
     bIsInitialized = true;
 }
@@ -249,7 +216,20 @@ void ofxVolumetrics::destroy()
 
 void ofxVolumetrics::updateVolumeData(unsigned char * data, int w, int h, int d, int xOffset, int yOffset, int zOffset)
 {
+#ifdef OFX_VOLUMETRICS_EMULATE_3D_TEXTURE
+    // upload each sub frame
+    for (int z = zOffset; z < (zOffset + d); z++)
+    {
+        int x = (z % numFramesX) * volWidth + xOffset;
+        int y = (z / numFramesX) * volHeight + yOffset;
+
+        // ofLogVerbose() << "uploading " << w << "x" << h << " pixels to location " << x << "," << y;
+
+        volumeTexture.loadData(data + w * h * z * 4, w, h, x, y, GL_RGBA);
+    }
+#else
     volumeTexture.loadData(data, w, h, d, xOffset, yOffset, zOffset, GL_RGBA);
+#endif
 }
 
 void ofxVolumetrics::drawVolume(float x, float y, float z, float size, int zTexOffset)
@@ -296,16 +276,22 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
     ofScale(cubeSize.x,cubeSize.y,cubeSize.z);
 
     //pass variables to the shader
+
+#ifdef OFX_VOLUMETRICS_EMULATE_3D_TEXTURE
+    volumeShader.setUniform2f("frame_layout", (float)numFramesX, (float)numFramesY); // how the emulated 3d texture is layed out
+    volumeShader.setUniformTexture("volume_tex", volumeTexture, 0); // volume texture reference
+#else
     glActiveTexture(GL_TEXTURE1);
     volumeTexture.bind();
     volumeShader.setUniform1i("volume_tex", 1); // volume texture reference
     volumeTexture.unbind();
     glActiveTexture(GL_TEXTURE0);
+#endif
 
-    volumeShader.setUniform3f("vol_d", (float)volWidth, (float)volHeight, (float)volDepth); //dimensions of the volume texture
-    volumeShader.setUniform3f("vol_d_pot", (float)volWidthPOT, (float)volHeightPOT, (float)volDepthPOT); //dimensions of the volume texture power of two
-    volumeShader.setUniform2f("bg_d", (float)renderWidth, (float)renderHeight); // dimensions of the background texture
-    volumeShader.setUniform1f("zoffset",zTexOffset); // used for animation so that we dont have to upload the entire volume every time
+    volumeShader.setUniform3f("vol_d", (float)volWidth, (float)volHeight, (float)volDepth); //dimensions of the volume
+    volumeShader.setUniform3f("vol_tex_d", (float)volTexWidth, (float)volTexHeight, (float)volTexDepth); //dimensions of the volume texture
+
+    volumeShader.setUniform1f("zoffset", zTexOffset); // used for animation so that we dont have to upload the entire volume every time
     volumeShader.setUniform1f("quality", quality.z); // 0 ... 1
     volumeShader.setUniform1f("density", density); // 0 ... 1
     volumeShader.setUniform1f("threshold", threshold);//(float)mouseX/(float)ofGetWidth());
@@ -362,7 +348,6 @@ void ofxVolumetrics::updateRenderDimentions()
 
 void ofxVolumetrics::setXyQuality(float q)
 {
-    float oldQuality = quality.x;
     quality.x = MAX(q,0.01);
 
     updateRenderDimentions();
