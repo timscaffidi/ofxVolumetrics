@@ -53,9 +53,9 @@ class ofxImageSequencePlayer: public ofImage {
             return worked;
         };
 
-        int getCurrentFrameNumber() { return curFrame - startFrame; }
-        void setCurrentFrameNumber(int i) { curFrame = startFrame + i; }
-        int getSequenceLength() { return totalFrames; }
+        unsigned int getCurrentFrameNumber() { return curFrame - startFrame; }
+        void setCurrentFrameNumber(unsigned int i) { curFrame = startFrame + i; }
+        unsigned int getSequenceLength() { return totalFrames; }
         bool isInitialized() { return initialized; }
 
         string generateFullFilename() {
@@ -71,8 +71,8 @@ class ofxImageSequencePlayer: public ofImage {
 
     private:
         bool initialized;
-        int curFrame, startFrame;
+        unsigned int curFrame, startFrame;
         string fPrefix, fExt;
-        int numDigits;
-        int totalFrames;
+        unsigned int numDigits;
+        unsigned int totalFrames;
 };
