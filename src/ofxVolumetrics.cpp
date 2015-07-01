@@ -13,6 +13,9 @@ ofxVolumetrics::ofxVolumetrics()
     volDepth = 0;
     bIsInitialized = false;
 
+    slice_p = ofVec3f(0, 0, 0);
+    slice_n = ofVec3f(0, 1, 0);
+
     /* Front side */
     volNormals[0] = ofVec3f(0.0, 0.0, 1.0);
     volNormals[1] = ofVec3f(0.0, 0.0, 1.0);
@@ -103,6 +106,8 @@ void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize, bool usePower
                                         uniform sampler3D volume_tex;
                                         uniform vec3 vol_d;
                                         uniform vec3 vol_d_pot;
+                                        uniform vec3 slice_p;
+                                        uniform vec3 slice_n;
                                         uniform vec2 bg_d;
                                         uniform float zoffset;
                                         uniform float quality;
@@ -178,7 +183,7 @@ void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize, bool usePower
                                                     vec3 vecz = vec + zOffsetVec;
                                                     if(vecz.z > maxv.z) vecz.z-=maxv.z;
                                                     color_sample = texture3D(volume_tex, vecz);
-                                                    if(color_sample.a > threshold) {
+                                                    if(color_sample.a > threshold && dot(vecz - slice_p, slice_n) > 0) {
 
                                                         float oneMinusAlpha = 1. - col_acc.a;
                                                         color_sample.a *= aScale;
@@ -304,6 +309,8 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 
     volumeShader.setUniform3f("vol_d", (float)volWidth, (float)volHeight, (float)volDepth); //dimensions of the volume texture
     volumeShader.setUniform3f("vol_d_pot", (float)volWidthPOT, (float)volHeightPOT, (float)volDepthPOT); //dimensions of the volume texture power of two
+    volumeShader.setUniform3f("slice_p", slice_p.x, slice_p.y, slice_p.z);
+    volumeShader.setUniform3f("slice_n", slice_n.x, slice_n.y, slice_n.z);
     volumeShader.setUniform2f("bg_d", (float)renderWidth, (float)renderHeight); // dimensions of the background texture
     volumeShader.setUniform1f("zoffset",zTexOffset); // used for animation so that we dont have to upload the entire volume every time
     volumeShader.setUniform1f("quality", quality.z); // 0 ... 1
@@ -396,6 +403,19 @@ void ofxVolumetrics::setVolumeTextureFilterMode(GLint filterMode) {
     volumeTexture.unbind();
 }
 
+void ofxVolumetrics::setSlice(ofVec3f p, ofVec3f n) {
+    slice_p = p;
+    slice_n = n;
+}
+
+void ofxVolumetrics::setSlicePoint(ofVec3f p) {
+    slice_p = p;
+}
+
+void ofxVolumetrics::setSliceNormal(ofVec3f n) {
+    slice_n = n;
+}
+
 bool ofxVolumetrics::isInitialized()
 {
     return bIsInitialized;
@@ -438,4 +458,10 @@ float ofxVolumetrics::getDensity()
 }
 ofFbo & ofxVolumetrics::getFboReference(){
     return fboRender;
+}
+ofVec3f ofxVolumetrics::getSlicePoint(){
+    return slice_p;
+}
+ofVec3f ofxVolumetrics::getSliceNormal(){
+    return slice_n;
 }

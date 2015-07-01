@@ -29,5 +29,4 @@ public:
     ofImage background;
     ofxImageSequencePlayer imageSequence;
     bool linearFilter;
-
 };

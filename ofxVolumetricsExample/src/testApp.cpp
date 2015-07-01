@@ -18,6 +18,8 @@ void testApp::setup()
 
     volumeData = new unsigned char[volWidth*volHeight*volDepth*4];
 
+    ofVec2f offset = 0.5 * ofVec2f(volWidth, volHeight) - ofVec2f(102, 141);
+
     for(int z=0; z<volDepth; z++)
     {
         imageSequence.loadFrame(z);
@@ -27,14 +29,23 @@ void testApp::setup()
             {
                 // convert from greyscale to RGBA, false color
                 int i4 = ((x+volWidth*y)+z*volWidth*volHeight)*4;
-                int sample = imageSequence.getPixels()[x+y*volWidth];
-                ofColor c;
-                c.setHsb(sample, 255-sample, sample);
 
-                volumeData[i4] = c.r;
-                volumeData[i4+1] = c.g;
-                volumeData[i4+2] = c.b;
-                volumeData[i4+3] = sample;
+                if(x - offset.x < 0 || x - offset.x >= volWidth ||
+                   y - offset.y < 0 || y - offset.y >= volHeight) {
+                    volumeData[i4] = 0;
+                    volumeData[i4+1] = 0;
+                    volumeData[i4+2] = 0;
+                    volumeData[i4+3] = 0;
+                }
+                else {
+                    int sample = imageSequence.getPixels()[x - static_cast<int>(offset.x) + (y - static_cast<int>(offset.y)) * volWidth];
+                    ofColor c;
+                    c.setHsb(sample, 255-sample, sample);
+                    volumeData[i4] = c.r;
+                    volumeData[i4+1] = c.g;
+                    volumeData[i4+2] = c.b;
+                    volumeData[i4+3] = sample;
+                }
             }
         }
     }
@@ -42,8 +53,10 @@ void testApp::setup()
     myVolume.setup(volWidth, volHeight, volDepth, ofVec3f(1,1,2),true);
     myVolume.updateVolumeData(volumeData,volWidth,volHeight,volDepth,0,0,0);
     myVolume.setRenderSettings(1.0, 1.0, 0.75, 0.1);
+    myVolume.setSlice(ofVec3f(0, 0.5, 0), ofVec3f(0, -1, 0));
 
-    linearFilter = false;
+    myVolume.setVolumeTextureFilterMode(GL_LINEAR);
+    linearFilter = true;
 
     cam.setDistance(1000);
     cam.enableMouseInput();
@@ -62,11 +75,12 @@ void testApp::draw()
     background.draw(0,0,ofGetWidth(),ofGetHeight());
 
     cam.begin();
+    ofRotateX(-90);
     myVolume.drawVolume(0,0,0, ofGetHeight(), 0);
     cam.end();
 
     ofSetColor(0,0,0,64);
-    ofRect(0,0,270,90);
+    ofRect(0,0,270,130);
     ofSetColor(255,255,255,255);
 
     ofDrawBitmapString("volume dimensions: " + ofToString(myVolume.getVolumeWidth()) + "x" + ofToString(myVolume.getVolumeHeight()) + "x" + ofToString(myVolume.getVolumeDepth()) + "\n" +
@@ -74,6 +88,8 @@ void testApp::draw()
                        "Z quality (z/Z):   " + ofToString(myVolume.getZQuality()) + "\n" +
                        "Threshold (t/T):   " + ofToString(myVolume.getThreshold()) + "\n" +
                        "Density (d/D):     " + ofToString(myVolume.getDensity()) + "\n" +
+                       "Slice threshold\n" +
+                       "(s/S):             " + ofToString(myVolume.getSlicePoint().y) + "\n" +
                        "Filter mode (l/n): " + (linearFilter?"linear":"nearest"),20,20);
 
 }
@@ -84,6 +100,12 @@ void testApp::keyPressed(int key)
 
     switch(key)
     {
+    case 's':
+        myVolume.setSlicePoint(myVolume.getSlicePoint() + ofVec3f(0, 0.01, 0));
+        break;
+    case 'S':
+        myVolume.setSlicePoint(myVolume.getSlicePoint() - ofVec3f(0, 0.01, 0));
+        break;
     case 't':
         myVolume.setThreshold(myVolume.getThreshold()-0.01);
         break;
