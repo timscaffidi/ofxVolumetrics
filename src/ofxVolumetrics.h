@@ -33,12 +33,21 @@ public:
     float getZQuality();
     float getThreshold();
     float getDensity();
+    ofVec3f getSlicePoint();
+    ofVec3f getSliceNormal();
     void setXyQuality(float q);
     void setZQuality(float q);
     void setThreshold(float t);
     void setDensity(float d);
     void setRenderSettings(float xyQuality, float zQuality, float dens, float thresh);
     void setVolumeTextureFilterMode(GLint filterMode);
+    // slice point: the intersection (center) of the slicing plane
+    // slice normal: the normal vector of the slicing plane
+    //               ofVec(0,  1, 0) to render back of skeleton
+    //               ofVec(0, -1, 0) to render front of skeleton
+    void setSlice(ofVec3f, ofVec3f);
+    void setSlicePoint(ofVec3f);
+    void setSliceNormal(ofVec3f);
 protected:
 private:
     void drawRGBCube();
@@ -59,4 +68,5 @@ private:
     float threshold;
     float density;
     int renderWidth, renderHeight;
+    ofVec3f slice_p, slice_n;
 };
