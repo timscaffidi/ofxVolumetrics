@@ -18,6 +18,8 @@ void testApp::setup()
 
     volumeData = new unsigned char[volWidth*volHeight*volDepth*4];
 
+    ofVec2f offset = 0.5 * ofVec2f(volWidth, volHeight) - ofVec2f(102, 141);
+
     for(int z=0; z<volDepth; z++)
     {
         imageSequence.loadFrame(z);
@@ -27,14 +29,23 @@ void testApp::setup()
             {
                 // convert from greyscale to RGBA, false color
                 int i4 = ((x+volWidth*y)+z*volWidth*volHeight)*4;
-                int sample = imageSequence.getPixels()[x+y*volWidth];
-                ofColor c;
-                c.setHsb(sample, 255-sample, sample);
 
-                volumeData[i4] = c.r;
-                volumeData[i4+1] = c.g;
-                volumeData[i4+2] = c.b;
-                volumeData[i4+3] = sample;
+                if(x - offset.x < 0 || x - offset.x >= volWidth ||
+                   y - offset.y < 0 || y - offset.y >= volHeight) {
+                    volumeData[i4] = 0;
+                    volumeData[i4+1] = 0;
+                    volumeData[i4+2] = 0;
+                    volumeData[i4+3] = 0;
+                }
+                else {
+                    int sample = imageSequence.getPixels()[x - static_cast<int>(offset.x) + (y - static_cast<int>(offset.y)) * volWidth];
+                    ofColor c;
+                    c.setHsb(sample, 255-sample, sample);
+                    volumeData[i4] = c.r;
+                    volumeData[i4+1] = c.g;
+                    volumeData[i4+2] = c.b;
+                    volumeData[i4+3] = sample;
+                }
             }
         }
     }
