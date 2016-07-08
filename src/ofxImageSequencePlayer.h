@@ -12,7 +12,7 @@ class ofxImageSequencePlayer: public ofImage {
             fPrefix = prefix;
             fExt = extension;
             numDigits = digits;
-            initialized = loadImage(generateFullFilename());
+            initialized = load(generateFullFilename());
 
             if(!initialized){
                 ofLogWarning() << "ofxImageSequencePlayer: unable to load inital image in the sequence: " << generateFullFilename();
@@ -32,14 +32,14 @@ class ofxImageSequencePlayer: public ofImage {
         };
 
         bool loadNextFrame() {
-            bool worked = loadImage(generateFullFilename());
+            bool worked = load(generateFullFilename());
             if(worked)
                 curFrame++;
             return worked;
         };
 
         bool loadPreviousFrame() {
-            bool worked = loadImage(generateFullFilename());
+            bool worked = load(generateFullFilename());
             if(worked)
                 curFrame = curFrame > 0 ? curFrame - 1 : 0;
             return worked;
@@ -47,7 +47,7 @@ class ofxImageSequencePlayer: public ofImage {
 
         bool loadFrame(int n) {
             curFrame = startFrame + n;
-            bool worked = loadImage(generateFullFilename());
+            bool worked = load(generateFullFilename());
             if(worked)
                 curFrame++;
             return worked;
