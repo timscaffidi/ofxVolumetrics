@@ -34,6 +34,7 @@ class ofxTextureData3d : public ofTextureData
 	float tex_d;
 	float depth;
     int glType, pixelType;
+    int glTypeInternal;
 };
 
 class ofxTexture3d
