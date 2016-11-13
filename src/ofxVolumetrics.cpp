@@ -362,7 +362,6 @@ void ofxVolumetrics::updateRenderDimentions()
 
 void ofxVolumetrics::setXyQuality(float q)
 {
-    float oldQuality = quality.x;
     quality.x = MAX(q,0.01);
 
     updateRenderDimentions();

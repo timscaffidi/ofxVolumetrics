@@ -6,7 +6,7 @@ void testApp::setup()
     ofSetFrameRate(60);
     ofSetLogLevel(OF_LOG_VERBOSE);
     background.allocate(1024,768,OF_IMAGE_COLOR);
-    background.loadImage("background.png");
+    background.load("background.png");
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 
     imageSequence.init("volumes/head/cthead-8bit",3,".tif", 1);
@@ -66,7 +66,7 @@ void testApp::draw()
     cam.end();
 
     ofSetColor(0,0,0,64);
-    ofRect(0,0,270,90);
+    ofDrawRectangle(0,0,270,90);
     ofSetColor(255,255,255,255);
 
     ofDrawBitmapString("volume dimensions: " + ofToString(myVolume.getVolumeWidth()) + "x" + ofToString(myVolume.getVolumeHeight()) + "x" + ofToString(myVolume.getVolumeDepth()) + "\n" +

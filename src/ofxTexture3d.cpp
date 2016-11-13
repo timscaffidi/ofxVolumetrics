@@ -66,15 +66,15 @@ void ofxTexture3d::loadData(unsigned short* data, int w, int h, int d, int xOffs
 }
 void ofxTexture3d::loadData(ofPixels & pix, int d, int xOffset, int yOffset, int zOffset)
 {
-    loadData(pix.getPixels(), pix.getWidth(), pix.getHeight(), d, xOffset, yOffset, zOffset, ofGetGlFormat(pix));
+    loadData(pix.getData(), pix.getWidth(), pix.getHeight(), d, xOffset, yOffset, zOffset, ofGetGlFormat(pix));
 }
 void ofxTexture3d::loadData(ofShortPixels & pix, int d, int xOffset, int yOffset, int zOffset)
 {
-    loadData(pix.getPixels(), pix.getWidth(), pix.getHeight(), d, xOffset, yOffset, zOffset, ofGetGlFormat(pix));
+    loadData(pix.getData(), pix.getWidth(), pix.getHeight(), d, xOffset, yOffset, zOffset, ofGetGlFormat(pix));
 }
 void ofxTexture3d::loadData(ofFloatPixels & pix, int d, int xOffset, int yOffset, int zOffset)
 {
-    loadData(pix.getPixels(), pix.getWidth(), pix.getHeight(), d, xOffset, yOffset, zOffset, ofGetGlFormat(pix));
+    loadData(pix.getData(), pix.getWidth(), pix.getHeight(), d, xOffset, yOffset, zOffset, ofGetGlFormat(pix));
 }
 
 void ofxTexture3d::loadData(void * data, int w, int h, int d, int xOffset, int yOffset, int zOffset, int glFormat)
@@ -91,7 +91,7 @@ void ofxTexture3d::loadData(void * data, int w, int h, int d, int xOffset, int y
         return;
     }
 
-    ofSetPixelStorei(w, 1, ofGetNumChannelsFromGLFormat(glFormat));
+    ofSetPixelStoreiAlignment(GL_UNPACK_ALIGNMENT,w,1,ofGetNumChannelsFromGLFormat(glFormat));
     glEnable(texData.textureTarget);
     glBindTexture(texData.textureTarget, (GLuint) texData.textureID);
     glTexSubImage3D(texData.textureTarget, 0, xOffset, yOffset, zOffset, w, h, d, texData.glType, texData.pixelType, data);
