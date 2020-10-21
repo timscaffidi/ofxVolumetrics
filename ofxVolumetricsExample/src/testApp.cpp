@@ -117,16 +117,16 @@ void testApp::keyPressed(int key)
         linearFilter = false;
         break;
     case OF_KEY_UP:
-        cam.getTarget().boom(-5);
+        //cam.getTarget().boom(-5);
         break;
     case OF_KEY_DOWN:
-        cam.getTarget().boom(5);
+        //cam.getTarget().boom(5);
         break;
     case OF_KEY_LEFT:
-        cam.getTarget().truck(-5);
+        //cam.getTarget().truck(-5);
         break;
     case OF_KEY_RIGHT:
-        cam.getTarget().truck(5);
+        //cam.getTarget().truck(5);
         break;
     }
 
