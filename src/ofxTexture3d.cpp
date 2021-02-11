@@ -94,6 +94,16 @@ void ofxTexture3d::clear() {
 	texData.bAllocated = false;
 }
 
+void ofxTexture3d::setTextureMinMagFilter(GLint filterMode)
+{
+	if (filterMode != GL_NEAREST && filterMode != GL_LINEAR) return;
+
+	bind();
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, filterMode);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, filterMode);
+	unbind();
+}
+
 void ofxTexture3d::bind() {
 	//we could check if it has been allocated - but we don't do that in draw()
 	glEnable(texData.textureTarget);

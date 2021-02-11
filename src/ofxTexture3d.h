@@ -49,6 +49,7 @@ public:
 	void bindAsImage(GLuint unit, GLenum access, GLint level = 0, GLboolean layered = GL_TRUE, GLint layer = 0);
 	void unbind();
 	void clear();
+	void setTextureMinMagFilter(GLint filterMode);
 	ofxTextureData3d getTextureData();
 protected:
 	void loadData(void* data, int w, int h, int d, int xOffset, int yOffset, int zOffset, int glFormat);

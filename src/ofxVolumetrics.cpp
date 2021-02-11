@@ -278,35 +278,35 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 	{
 		ofClear(0, 0);
 
-	ofTranslate(x - cubeSize.x / 2, y - cubeSize.y / 2, z - cubeSize.z / 2);
-	ofScale(cubeSize.x, cubeSize.y, cubeSize.z);
+		ofTranslate(x - cubeSize.x / 2, y - cubeSize.y / 2, z - cubeSize.z / 2);
+		ofScale(cubeSize.x, cubeSize.y, cubeSize.z);
 
 		volumeShader.begin();
-	volumeShader.setUniformTexture("volume_tex", GL_TEXTURE_3D, volumeTexture.getTextureData().textureID, 0);
-	volumeShader.setUniform3f("vol_d", (float)volWidth, (float)volHeight, (float)volDepth); //dimensions of the volume texture
-	volumeShader.setUniform3f("vol_d_pot", (float)volWidthPOT, (float)volHeightPOT, (float)volDepthPOT); //dimensions of the volume texture power of two
-	volumeShader.setUniform2f("bg_d", (float)renderWidth, (float)renderHeight); // dimensions of the background texture
-	volumeShader.setUniform1f("zoffset", zTexOffset); // used for animation so that we dont have to upload the entire volume every time
-	volumeShader.setUniform1f("quality", quality.z); // 0 ... 1
-	volumeShader.setUniform1f("density", density); // 0 ... 1
-	volumeShader.setUniform1f("threshold", threshold);//(float)mouseX/(float)ofGetWidth());
+		volumeShader.setUniformTexture("volume_tex", GL_TEXTURE_3D, volumeTexture.getTextureData().textureID, 0);
+		volumeShader.setUniform3f("vol_d", (float)volWidth, (float)volHeight, (float)volDepth); //dimensions of the volume texture
+		volumeShader.setUniform3f("vol_d_pot", (float)volWidthPOT, (float)volHeightPOT, (float)volDepthPOT); //dimensions of the volume texture power of two
+		volumeShader.setUniform2f("bg_d", (float)renderWidth, (float)renderHeight); // dimensions of the background texture
+		volumeShader.setUniform1f("zoffset", zTexOffset); // used for animation so that we dont have to upload the entire volume every time
+		volumeShader.setUniform1f("quality", quality.z); // 0 ... 1
+		volumeShader.setUniform1f("density", density); // 0 ... 1
+		volumeShader.setUniform1f("threshold", threshold);//(float)mouseX/(float)ofGetWidth());
 
-	glFrontFace(cull_mode_fbo);
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
-	drawRGBCube();
-	glDisable(GL_CULL_FACE);
-	glFrontFace(cull_mode);
+		glFrontFace(cull_mode_fbo);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+		drawRGBCube();
+		glDisable(GL_CULL_FACE);
+		glFrontFace(cull_mode);
 
-	volumeShader.end();
+		volumeShader.end();
 	}
 	fboRender.end();
 
 	ofPushView();
 	{
-	glColor4iv(color);
+		glColor4iv(color);
 		ofSetupScreenOrtho();		
-	fboRender.draw(0, 0, ofGetWidth(), ofGetHeight());
+		fboRender.draw(0, 0, ofGetWidth(), ofGetHeight());
 	}
 	ofPopView();
 
@@ -361,12 +361,7 @@ void ofxVolumetrics::setRenderSettings(float xyQuality, float zQuality, float de
 }
 
 void ofxVolumetrics::setVolumeTextureFilterMode(GLint filterMode) {
-	if (filterMode != GL_NEAREST && filterMode != GL_LINEAR) return;
-
-	volumeTexture.bind();
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, filterMode);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, filterMode);
-	volumeTexture.unbind();
+	volumeTexture.setTextureMinMagFilter(filterMode);
 }
 
 bool ofxVolumetrics::isInitialized() {
