@@ -40,7 +40,7 @@ public:
 	void setVolumeTextureFilterMode(GLint filterMode);
 protected:
 private:
-	void drawRGBCube();
+	void drawVolumeCube();
 	void updateRenderDimentions();
 
 	ofFbo fboRender;
@@ -48,7 +48,6 @@ private:
 	ofxTexture3d volumeTexture;
 	//ofMesh volumeMesh; //unfortunately this only supports 2d texture coordinates at the moment.
 	ofVec3f volVerts[24];
-	ofVec3f volNormals[24];
 	ofVec3f voxelRatio;
 	bool bIsInitialized;
 	int volWidth, volHeight, volDepth;

@@ -13,67 +13,36 @@ ofxVolumetrics::ofxVolumetrics() {
 	bIsInitialized = false;
 
 	/* Front side */
-	volNormals[0] = ofVec3f(0.0, 0.0, 1.0);
-	volNormals[1] = ofVec3f(0.0, 0.0, 1.0);
-	volNormals[2] = ofVec3f(0.0, 0.0, 1.0);
-	volNormals[3] = ofVec3f(0.0, 0.0, 1.0);
-
 	volVerts[0] = ofVec3f(1.0, 1.0, 1.0);
 	volVerts[1] = ofVec3f(0.0, 1.0, 1.0);
 	volVerts[2] = ofVec3f(0.0, 0.0, 1.0);
 	volVerts[3] = ofVec3f(1.0, 0.0, 1.0);
 
-
 	/* Right side */
-	volNormals[4] = ofVec3f(1.0, 0.0, 0.0);
-	volNormals[5] = ofVec3f(1.0, 0.0, 0.0);
-	volNormals[6] = ofVec3f(1.0, 0.0, 0.0);
-	volNormals[7] = ofVec3f(1.0, 0.0, 0.0);
-
 	volVerts[4] = ofVec3f(1.0, 1.0, 1.0);
 	volVerts[5] = ofVec3f(1.0, 0.0, 1.0);
 	volVerts[6] = ofVec3f(1.0, 0.0, 0.0);
 	volVerts[7] = ofVec3f(1.0, 1.0, 0.0);
 
 	/* Top side */
-	volNormals[8] = ofVec3f(0.0, 1.0, 0.0);
-	volNormals[9] = ofVec3f(0.0, 1.0, 0.0);
-	volNormals[10] = ofVec3f(0.0, 1.0, 0.0);
-	volNormals[11] = ofVec3f(0.0, 1.0, 0.0);
-
 	volVerts[8] = ofVec3f(1.0, 1.0, 1.0);
 	volVerts[9] = ofVec3f(1.0, 1.0, 0.0);
 	volVerts[10] = ofVec3f(0.0, 1.0, 0.0);
 	volVerts[11] = ofVec3f(0.0, 1.0, 1.0);
 
 	/* Left side */
-	volNormals[12] = ofVec3f(-1.0, 0.0, 0.0);
-	volNormals[13] = ofVec3f(-1.0, 0.0, 0.0);
-	volNormals[14] = ofVec3f(-1.0, 0.0, 0.0);
-	volNormals[15] = ofVec3f(-1.0, 0.0, 0.0);
-
 	volVerts[12] = ofVec3f(0.0, 1.0, 1.0);
 	volVerts[13] = ofVec3f(0.0, 1.0, 0.0);
 	volVerts[14] = ofVec3f(0.0, 0.0, 0.0);
 	volVerts[15] = ofVec3f(0.0, 0.0, 1.0);
 
 	/* Bottom side */
-	volNormals[16] = ofVec3f(0.0, -1.0, 0.0);
-	volNormals[17] = ofVec3f(0.0, -1.0, 0.0);
-	volNormals[18] = ofVec3f(0.0, -1.0, 0.0);
-	volNormals[19] = ofVec3f(0.0, -1.0, 0.0);
-
 	volVerts[16] = ofVec3f(0.0, 0.0, 0.0);
 	volVerts[17] = ofVec3f(1.0, 0.0, 0.0);
 	volVerts[18] = ofVec3f(1.0, 0.0, 1.0);
 	volVerts[19] = ofVec3f(0.0, 0.0, 1.0);
 
 	/* Back side */
-	volNormals[20] = ofVec3f(0.0, 0.0, -1.0);
-	volNormals[21] = ofVec3f(0.0, 0.0, -1.0);
-	volNormals[22] = ofVec3f(0.0, 0.0, -1.0);
-	volNormals[23] = ofVec3f(0.0, 0.0, -1.0);
-
 	volVerts[20] = ofVec3f(1.0, 0.0, 0.0);
 	volVerts[21] = ofVec3f(0.0, 0.0, 0.0);
 	volVerts[22] = ofVec3f(0.0, 1.0, 0.0);
@@ -294,7 +263,7 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 		glFrontFace(cull_mode_fbo);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
-		drawRGBCube();
+		drawVolumeCube();
 		glDisable(GL_CULL_FACE);
 		glFrontFace(cull_mode);
 
@@ -304,29 +273,23 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 
 	ofPushView();
 	{
-		glColor4iv(color);
-		ofSetupScreenOrtho();		
-		fboRender.draw(0, 0, ofGetWidth(), ofGetHeight());
+	glColor4iv(color);
+	ofSetupScreenOrtho();		
+	fboRender.draw(0, 0, ofGetWidth(), ofGetHeight());
 	}
 	ofPopView();
 
 }
 
-void ofxVolumetrics::drawRGBCube() {
+void ofxVolumetrics::drawVolumeCube() {
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 	glVertexPointer(3, GL_FLOAT, sizeof(ofVec3f), volVerts);
-	glNormalPointer(GL_FLOAT, sizeof(ofVec3f), volNormals);
-	glColorPointer(3, GL_FLOAT, sizeof(ofVec3f), volVerts);
 	glTexCoordPointer(3, GL_FLOAT, sizeof(ofVec3f), volVerts);
 
 	glDrawArrays(GL_QUADS, 0, 24);
 
-	glDisableClientState(GL_COLOR_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
