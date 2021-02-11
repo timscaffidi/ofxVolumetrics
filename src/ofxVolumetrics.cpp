@@ -12,41 +12,54 @@ ofxVolumetrics::ofxVolumetrics() {
 	volDepth = 0;
 	bIsInitialized = false;
 
-	/* Front side */
-	volVerts[0] = ofVec3f(1.0, 1.0, 1.0);
-	volVerts[1] = ofVec3f(0.0, 1.0, 1.0);
-	volVerts[2] = ofVec3f(0.0, 0.0, 1.0);
-	volVerts[3] = ofVec3f(1.0, 0.0, 1.0);
-
-	/* Right side */
-	volVerts[4] = ofVec3f(1.0, 1.0, 1.0);
-	volVerts[5] = ofVec3f(1.0, 0.0, 1.0);
-	volVerts[6] = ofVec3f(1.0, 0.0, 0.0);
-	volVerts[7] = ofVec3f(1.0, 1.0, 0.0);
-
-	/* Top side */
-	volVerts[8] = ofVec3f(1.0, 1.0, 1.0);
-	volVerts[9] = ofVec3f(1.0, 1.0, 0.0);
-	volVerts[10] = ofVec3f(0.0, 1.0, 0.0);
-	volVerts[11] = ofVec3f(0.0, 1.0, 1.0);
-
-	/* Left side */
-	volVerts[12] = ofVec3f(0.0, 1.0, 1.0);
-	volVerts[13] = ofVec3f(0.0, 1.0, 0.0);
-	volVerts[14] = ofVec3f(0.0, 0.0, 0.0);
-	volVerts[15] = ofVec3f(0.0, 0.0, 1.0);
-
-	/* Bottom side */
-	volVerts[16] = ofVec3f(0.0, 0.0, 0.0);
-	volVerts[17] = ofVec3f(1.0, 0.0, 0.0);
-	volVerts[18] = ofVec3f(1.0, 0.0, 1.0);
-	volVerts[19] = ofVec3f(0.0, 0.0, 1.0);
-
-	/* Back side */
-	volVerts[20] = ofVec3f(1.0, 0.0, 0.0);
-	volVerts[21] = ofVec3f(0.0, 0.0, 0.0);
-	volVerts[22] = ofVec3f(0.0, 1.0, 0.0);
-	volVerts[23] = ofVec3f(1.0, 1.0, 0.0);
+	vector<vec3> vertices {
+		// front side
+		vec3(1.0, 1.0, 1.0),
+		vec3(0.0, 1.0, 1.0),
+		vec3(1.0, 0.0, 1.0),
+		vec3(0.0, 0.0, 1.0),
+		// right side
+		vec3(1.0, 1.0, 0.0),
+		vec3(1.0, 1.0, 1.0),
+		vec3(1.0, 0.0, 0.0),
+		vec3(1.0, 0.0, 1.0),
+		// top side
+		vec3(0.0, 1.0, 0.0),
+		vec3(0.0, 1.0, 1.0),
+		vec3(1.0, 1.0, 0.0),
+		vec3(1.0, 1.0, 1.0),		
+		// left side
+		vec3(0.0, 1.0, 1.0),
+		vec3(0.0, 1.0, 0.0),		
+		vec3(0.0, 0.0, 1.0),
+		vec3(0.0, 0.0, 0.0),
+		// bottom side
+		vec3(1.0, 0.0, 1.0),
+		vec3(0.0, 0.0, 1.0),
+		vec3(1.0, 0.0, 0.0),
+		vec3(0.0, 0.0, 0.0),		
+		// back side
+		vec3(0.0, 1.0, 0.0),
+		vec3(1.0, 1.0, 0.0),	
+		vec3(0.0, 0.0, 0.0),
+		vec3(1.0, 0.0, 0.0)		
+	};	
+	vector<unsigned int> indices {
+		// front side
+		0, 2, 1, 1, 2, 3,
+		// right side
+		4, 6, 5, 5, 6, 7,
+		// top side
+		8, 10, 9, 9, 10, 11,
+		// left side
+		12, 14, 13, 13, 14, 15,
+		// bottom side
+		16, 18, 17, 17, 18, 19,
+		// back side
+		20, 22, 21, 21, 22, 23
+	};
+	volumeMesh.addVertices(vertices);
+	volumeMesh.addIndices(indices);
 }
 
 ofxVolumetrics::~ofxVolumetrics() {
@@ -213,7 +226,7 @@ void ofxVolumetrics::updateVolumeData(unsigned char* data, int w, int h, int d, 
 
 void ofxVolumetrics::drawVolume(float x, float y, float z, float size, int zTexOffset) {
 	ofVec3f volumeSize = voxelRatio * ofVec3f(volWidth, volHeight, volDepth);
-	float maxDim = max(max(volumeSize.x, volumeSize.y), volumeSize.z);
+	float maxDim = glm::max(glm::max(volumeSize.x, volumeSize.y), volumeSize.z);
 	volumeSize = volumeSize * size / maxDim;
 
 	drawVolume(x, y, z, volumeSize.x, volumeSize.y, volumeSize.z, zTexOffset);
@@ -261,11 +274,13 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 		glFrontFace(cull_mode_fbo);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
-		drawVolumeCube();
+		volumeMesh.drawFaces();
 		glDisable(GL_CULL_FACE);
 		glFrontFace(cull_mode);
 
 		volumeShader.end();
+
+		//volumeMesh.drawWireframe();
 	}
 	fboRender.end();
 
@@ -276,20 +291,6 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 	fboRender.draw(0, 0, ofGetWidth(), ofGetHeight());
 
 	ofPopView();
-
-}
-
-void ofxVolumetrics::drawVolumeCube() {
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-	glVertexPointer(3, GL_FLOAT, sizeof(ofVec3f), volVerts);
-	glTexCoordPointer(3, GL_FLOAT, sizeof(ofVec3f), volVerts);
-
-	glDrawArrays(GL_QUADS, 0, 24);
-
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 void ofxVolumetrics::updateRenderDimentions() {
