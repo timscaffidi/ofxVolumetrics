@@ -1,6 +1,7 @@
 #pragma once
 
-/*      ofxVolumetrics - render volumetric data on the GPU
+/*      
+ ofxVolumetrics - render volumetric data on the GPU
 
  Written by Timothy Scaffidi (http://timothyscaffidi.com)
  Volumetric rendering algorithm adapted from Peter Trier (http://www.daimi.au.dk/~trier/?page_id=98)

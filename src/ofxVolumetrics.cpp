@@ -199,8 +199,6 @@ void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize, bool usePower
 
 void ofxVolumetrics::destroy() {
 	volumeShader.unload();
-	//    fboBackground.destroy();
-	//    fboRender.destroy();
 	volumeTexture.clear();
 
 	volWidth = renderWidth = 0;
@@ -272,11 +270,11 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 	fboRender.end();
 
 	ofPushView();
-	{
+
 	glColor4iv(color);
 	ofSetupScreenOrtho();		
 	fboRender.draw(0, 0, ofGetWidth(), ofGetHeight());
-	}
+
 	ofPopView();
 
 }
