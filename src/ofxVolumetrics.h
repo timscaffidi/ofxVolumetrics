@@ -39,6 +39,7 @@ public:
 	void setDensity(float d);
 	void setRenderSettings(float xyQuality, float zQuality, float dens, float thresh);
 	void setVolumeTextureFilterMode(GLint filterMode);
+	void setDrawDebugVolume(bool b);
 protected:
 private:
 	void updateRenderDimentions();
@@ -56,4 +57,5 @@ private:
 	float threshold;
 	float density;
 	int renderWidth, renderHeight;
+	bool bDrawDebugVolume;
 };

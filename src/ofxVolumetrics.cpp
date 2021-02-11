@@ -11,6 +11,7 @@ ofxVolumetrics::ofxVolumetrics() {
 	volHeight = renderHeight = 0;
 	volDepth = 0;
 	bIsInitialized = false;
+	bDrawDebugVolume = false;
 
 	vector<vec3> vertices {
 		// front side
@@ -170,7 +171,14 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 
 		volumeShader.end();
 
-		//volumeMesh.drawWireframe();
+		if (bDrawDebugVolume) {
+			glFrontFace(cull_mode_fbo);
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_FRONT);
+			volumeMesh.drawWireframe();
+			glDisable(GL_CULL_FACE);
+			glFrontFace(cull_mode);
+		}		
 	}
 	fboRender.end();
 
@@ -214,6 +222,10 @@ void ofxVolumetrics::setRenderSettings(float xyQuality, float zQuality, float de
 
 void ofxVolumetrics::setVolumeTextureFilterMode(GLint filterMode) {
 	volumeTexture.setTextureMinMagFilter(filterMode);
+}
+
+void ofxVolumetrics::setDrawDebugVolume(bool b) {
+	bDrawDebugVolume = b;
 }
 
 bool ofxVolumetrics::isInitialized() {
