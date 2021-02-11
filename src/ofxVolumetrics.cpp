@@ -257,35 +257,31 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 
 	ofVec3f cubeSize = ofVec3f(w, h, d);
 
-	GLfloat modl[16], proj[16];
-	glGetFloatv(GL_MODELVIEW_MATRIX, modl);
-	glGetFloatv(GL_PROJECTION_MATRIX, proj);
+	// store current color
 	GLint color[4];
 	glGetIntegerv(GL_CURRENT_COLOR, color);
 
-	ofVec3f scale, t;
-	ofQuaternion a, b;
-	ofMatrix4x4(modl).decompose(t, a, scale, b);
-
+	// store current cull mode
 	GLint cull_mode;
 	glGetIntegerv(GL_FRONT_FACE, &cull_mode);
-	GLint cull_mode_fbo = (scale.x * scale.y * scale.z) > 0 ? GL_CCW : GL_CW;
 
-	/* raycasting pass */
-	fboRender.begin();
-	volumeShader.begin();
-	ofClear(0, 0, 0, 0);
+	// set fbo cull mode
+	GLfloat matModelview[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, matModelview);	
+	ofVec3f scale, t;
+	ofQuaternion a, b;
+	ofMatrix4x4(matModelview).decompose(t, a, scale, b);
+	GLint cull_mode_fbo = (scale.x * scale.y * scale.z) > 0 ? GL_CCW : GL_CW;	
 
-	//load matricies from outside the FBO
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(proj);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(modl);
+	// raycasting pass
+	fboRender.begin(OF_FBOMODE_NODEFAULTS);
+	{
+		ofClear(0, 0);
 
 	ofTranslate(x - cubeSize.x / 2, y - cubeSize.y / 2, z - cubeSize.z / 2);
 	ofScale(cubeSize.x, cubeSize.y, cubeSize.z);
 
-	//pass variables to the shader
+		volumeShader.begin();
 	volumeShader.setUniformTexture("volume_tex", GL_TEXTURE_3D, volumeTexture.getTextureData().textureID, 0);
 	volumeShader.setUniform3f("vol_d", (float)volWidth, (float)volHeight, (float)volDepth); //dimensions of the volume texture
 	volumeShader.setUniform3f("vol_d_pot", (float)volWidthPOT, (float)volHeightPOT, (float)volDepthPOT); //dimensions of the volume texture power of two
@@ -303,14 +299,15 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 	glFrontFace(cull_mode);
 
 	volumeShader.end();
+	}
 	fboRender.end();
 
 	ofPushView();
-
+	{
 	glColor4iv(color);
-	ofSetupScreenOrtho();//ofGetWidth(), ofGetHeight(),OF_ORIENTATION_DEFAULT,false,0,1000);
+		ofSetupScreenOrtho();		
 	fboRender.draw(0, 0, ofGetWidth(), ofGetHeight());
-
+	}
 	ofPopView();
 
 }
