@@ -362,3 +362,6 @@ Project.xcconfig
 
 #windows
 Desktop.ini
+
+#examples 
+ofxVolumetricsExample/bin/data/ofxVolumetrics
