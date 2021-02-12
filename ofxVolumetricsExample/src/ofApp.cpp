@@ -1,7 +1,7 @@
-#include "testApp.h"
+#include "ofApp.h"
 
-//--------------------------------------------------------------
-void testApp::setup()
+
+void ofApp::setup()
 {
     ofSetFrameRate(60);
     ofSetLogLevel(OF_LOG_VERBOSE);
@@ -49,39 +49,39 @@ void testApp::setup()
     cam.enableMouseInput();
 }
 
-//--------------------------------------------------------------
-void testApp::update()
+
+void ofApp::update()
 {
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
 }
 
-//--------------------------------------------------------------
-void testApp::draw()
+
+void ofApp::draw()
 {
     ofSetColor(255,255,255,255);
     background.draw(0,0,ofGetWidth(),ofGetHeight());
 
-    cam.begin();
+    cam.begin();   
     myVolume.drawVolume(0,0,0, ofGetHeight(), 0);
+    if (drawDebug) ofDrawAxis(100);
     cam.end();
 
     ofSetColor(0,0,0,64);
-    ofDrawRectangle(0,0,270,90);
+    ofDrawRectangle(0,0,270,120);
     ofSetColor(255,255,255,255);
 
-    ofDrawBitmapString("volume dimensions: " + ofToString(myVolume.getVolumeWidth()) + "x" + ofToString(myVolume.getVolumeHeight()) + "x" + ofToString(myVolume.getVolumeDepth()) + "\n" +
+    ofDrawBitmapString("Volume dimensions: " + ofToString(myVolume.getVolumeWidth()) + "x" + ofToString(myVolume.getVolumeHeight()) + "x" + ofToString(myVolume.getVolumeDepth()) + "\n" +
                        "FBO quality (q/Q): " + ofToString(myVolume.getRenderWidth()) + "x" + ofToString(myVolume.getRenderHeight()) + "\n" +
                        "Z quality (z/Z):   " + ofToString(myVolume.getZQuality()) + "\n" +
                        "Threshold (t/T):   " + ofToString(myVolume.getThreshold()) + "\n" +
                        "Density (d/D):     " + ofToString(myVolume.getDensity()) + "\n" +
-                       "Filter mode (l/n): " + (linearFilter?"linear":"nearest"),20,20);
-
+                       "Filter mode (l/n): " + (linearFilter ? "linear" : "nearest") + "\n" +
+                       "Draw debug (b):    " + (drawDebug ? "on" : "off"), 20, 25);
 }
 
-//--------------------------------------------------------------
-void testApp::keyPressed(int key)
-{
 
+void ofApp::keyPressed(int key)
+{
     switch(key)
     {
     case 't':
@@ -116,66 +116,9 @@ void testApp::keyPressed(int key)
         myVolume.setVolumeTextureFilterMode(GL_NEAREST);
         linearFilter = false;
         break;
-    case OF_KEY_UP:
-        //cam.getTarget().boom(-5);
-        break;
-    case OF_KEY_DOWN:
-        //cam.getTarget().boom(5);
-        break;
-    case OF_KEY_LEFT:
-        //cam.getTarget().truck(-5);
-        break;
-    case OF_KEY_RIGHT:
-        //cam.getTarget().truck(5);
+    case 'b':
+        drawDebug = !drawDebug;
+        myVolume.setDrawDebugVolume(drawDebug);
         break;
     }
-
-}
-
-//--------------------------------------------------------------
-void testApp::keyReleased(int key)
-{
-
-}
-
-//--------------------------------------------------------------
-void testApp::mouseMoved(int x, int y )
-{
-
-}
-
-//--------------------------------------------------------------
-void testApp::mouseDragged(int x, int y, int button)
-{
-
-}
-
-//--------------------------------------------------------------
-void testApp::mousePressed(int x, int y, int button)
-{
-
-}
-
-//--------------------------------------------------------------
-void testApp::mouseReleased(int x, int y, int button)
-{
-
-}
-
-//--------------------------------------------------------------
-void testApp::windowResized(int w, int h)
-{
-
-}
-
-//--------------------------------------------------------------
-void testApp::gotMessage(ofMessage msg)
-{
-
-}
-
-//--------------------------------------------------------------
-void testApp::dragEvent(ofDragInfo dragInfo)
-{
-
 }
