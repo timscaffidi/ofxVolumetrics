@@ -1,10 +1,10 @@
 #version 130
-#extension GL_ARB_texture_rectangle : enable
+//#extension GL_ARB_texture_rectangle : enable
 
 in vec3 v_texcoord;
 in vec3 v_cameraPosition;
 
-out vec3 out_color;
+out vec4 out_color;
 
 uniform sampler3D volume_tex;
 uniform vec3 vol_d;
@@ -88,7 +88,7 @@ void main()
                 vecz.z -= maxv.z;
             }
 
-            color_sample = texture3D(volume_tex, vecz);
+            color_sample = texture(volume_tex, vecz);
             if (color_sample.a > threshold) 
             {
                 float oneMinusAlpha = 1. - col_acc.a;
