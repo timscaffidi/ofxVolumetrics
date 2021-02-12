@@ -135,10 +135,8 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 	glGetIntegerv(GL_FRONT_FACE, &cull_mode);
 
 	// set fbo cull mode
-	GLfloat matModelview[16];
-	glGetFloatv(GL_MODELVIEW_MATRIX, matModelview);	
-	ofVec3f scale, t;
-	ofQuaternion a, b;
+	mat4 matModelview = ofGetCurrentMatrix(OF_MATRIX_MODELVIEW);
+	ofVec3f scale, t; ofQuaternion a, b;
 	ofMatrix4x4(matModelview).decompose(t, a, scale, b);
 	GLint cull_mode_fbo = (scale.x * scale.y * scale.z) > 0 ? GL_CCW : GL_CW;
 
