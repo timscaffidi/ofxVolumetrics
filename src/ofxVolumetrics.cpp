@@ -3,8 +3,12 @@
 
 using namespace glm;
 
+ofxVolumetrics::~ofxVolumetrics() {
+	destroy();
+}
+
 ofxVolumetrics::ofxVolumetrics() {
-	quality = ofVec3f(1.0);
+	quality = vec3(1.0);
 	threshold = 1.0 / 255.0;
 	density = 1.0;
 	volWidth = renderWidth = 0;
@@ -63,11 +67,7 @@ ofxVolumetrics::ofxVolumetrics() {
 	volumeMesh.addIndices(indices);
 }
 
-ofxVolumetrics::~ofxVolumetrics() {
-	destroy();
-}
-
-void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize, bool usePowerOfTwoTexSize) {
+void ofxVolumetrics::setup(int w, int h, int d, vec3 voxelSize, bool usePowerOfTwoTexSize) {
 	string shadersPath = "ofxVolumetrics/shaders/";
 	shadersPath += ofIsGLProgrammableRenderer() ? "gl3/" : "gl2/";
 	volumeShader.unload();
@@ -116,7 +116,7 @@ void ofxVolumetrics::updateVolumeData(unsigned char* data, int w, int h, int d, 
 }
 
 void ofxVolumetrics::drawVolume(float x, float y, float z, float size, int zTexOffset) {
-	ofVec3f volumeSize = voxelRatio * ofVec3f(volWidth, volHeight, volDepth);
+	vec3 volumeSize = voxelRatio * vec3(volWidth, volHeight, volDepth);
 	float maxDim = glm::max(glm::max(volumeSize.x, volumeSize.y), volumeSize.z);
 	volumeSize = volumeSize * size / maxDim;
 
@@ -125,8 +125,6 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float size, int zTexO
 
 void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, float d, int zTexOffset) {
 	updateRenderDimentions();
-
-	ofVec3f cubeSize = ofVec3f(w, h, d);
 
 	// store current color
 	GLint color[4];
@@ -142,27 +140,29 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 	ofVec3f scale, t;
 	ofQuaternion a, b;
 	ofMatrix4x4(matModelview).decompose(t, a, scale, b);
-	GLint cull_mode_fbo = (scale.x * scale.y * scale.z) > 0 ? GL_CCW : GL_CW;	
+	GLint cull_mode_fbo = (scale.x * scale.y * scale.z) > 0 ? GL_CCW : GL_CW;
 
 	// raycasting pass
 	fboRender.begin(OF_FBOMODE_NODEFAULTS);
 	{
 		ofClear(0, 0);
 
-		ofTranslate(x - cubeSize.x / 2, y - cubeSize.y / 2, z - cubeSize.z / 2);
+		vec3 cubeSize(w, h, d);
+		vec3 cubePos(x, y, z);
+		ofTranslate(cubePos - cubeSize / 2.f);
 		ofScale(cubeSize.x, cubeSize.y, cubeSize.z);
 
 		volumeShader.begin();
 		volumeShader.setUniformTexture("volume_tex", GL_TEXTURE_3D, volumeTexture.getTextureData().textureID, 0);
-		volumeShader.setUniform3f("vol_d", (float)volWidth, (float)volHeight, (float)volDepth); //dimensions of the volume texture
-		volumeShader.setUniform3f("vol_d_pot", (float)volWidthPOT, (float)volHeightPOT, (float)volDepthPOT); //dimensions of the volume texture power of two
-		volumeShader.setUniform2f("bg_d", (float)renderWidth, (float)renderHeight); // dimensions of the background texture
+		volumeShader.setUniform3f("vol_d", vec3(volWidth, volHeight, volDepth)); //dimensions of the volume texture
+		volumeShader.setUniform3f("vol_d_pot", vec3(volWidthPOT, volHeightPOT, volDepthPOT)); //dimensions of the volume texture power of two
+		volumeShader.setUniform2f("bg_d", vec2(renderWidth, renderHeight)); // dimensions of the background texture
 		volumeShader.setUniform1f("zoffset", zTexOffset); // used for animation so that we dont have to upload the entire volume every time
-		volumeShader.setUniform1f("quality", quality.z); // 0 ... 1
-		volumeShader.setUniform1f("density", density); // 0 ... 1
-		volumeShader.setUniform1f("threshold", threshold);//(float)mouseX/(float)ofGetWidth());
+		volumeShader.setUniform1f("quality", quality.z); // 0..1
+		volumeShader.setUniform1f("density", density); // 0..1
+		volumeShader.setUniform1f("threshold", threshold);
 		if (ofIsGLProgrammableRenderer()) {
-			volumeShader.setUniformMatrix4f("modelViewMatrixInverse", glm::inverse(ofGetCurrentMatrix(OF_MATRIX_MODELVIEW)));
+			volumeShader.setUniformMatrix4f("modelViewMatrixInverse", inverse(ofGetCurrentMatrix(OF_MATRIX_MODELVIEW)));
 		}
 
 		glFrontFace(cull_mode_fbo);
@@ -261,6 +261,6 @@ float ofxVolumetrics::getThreshold() {
 float ofxVolumetrics::getDensity() {
 	return density;
 }
-ofFbo& ofxVolumetrics::getFboReference() {
+const ofFbo& ofxVolumetrics::getFbo() const {
 	return fboRender;
 }

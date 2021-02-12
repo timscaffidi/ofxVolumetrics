@@ -13,26 +13,34 @@
 #include "ofxTexture3d.h"
 #include "ofxImageSequencePlayer.h"
 
-class ofxVolumetrics {
+class ofxVolumetrics 
+{
 public:
+
 	ofxVolumetrics();
 	virtual ~ofxVolumetrics();
-	void setup(int w, int h, int d, ofVec3f voxelSize, bool usePowerOfTwoTexSize = false);
+	
+	void setup(int w, int h, int d, glm::vec3 voxelSize, bool usePowerOfTwoTexSize = false);
+	
 	void destroy();
+	
 	void updateVolumeData(unsigned char* data, int w, int h, int d, int xOffset, int yOffset, int zOffset);
+	
 	void drawVolume(float x, float y, float z, float size, int zTexOffset);
 	void drawVolume(float x, float y, float z, float w, float h, float d, int zTexOffset);
-	bool isInitialized();
+	
+	bool isInitialized();	
 	int getVolumeWidth();
 	int getVolumeHeight();
 	int getVolumeDepth();
-	ofFbo& getFboReference();
+	const ofFbo& getFbo() const;
 	int getRenderWidth();
 	int getRenderHeight();
 	float getXyQuality();
 	float getZQuality();
 	float getThreshold();
 	float getDensity();
+	
 	void setXyQuality(float q);
 	void setZQuality(float q);
 	void setThreshold(float t);
@@ -40,22 +48,27 @@ public:
 	void setRenderSettings(float xyQuality, float zQuality, float dens, float thresh);
 	void setVolumeTextureFilterMode(GLint filterMode);
 	void setDrawDebugVolume(bool b);
+
 protected:
+
 private:
+
 	void updateRenderDimentions();
 
 	ofFbo fboRender;
 	ofShader volumeShader;
 	ofxTexture3d volumeTexture;
 	ofVboMesh volumeMesh; 	
-	ofVec3f voxelRatio;
+	
+	glm::vec3 voxelRatio;
 	bool bIsInitialized;
 	int volWidth, volHeight, volDepth;
 	int volWidthPOT, volHeightPOT, volDepthPOT;
 	bool bIsPowerOfTwo;
-	ofVec3f quality;
+	glm::vec3 quality;
 	float threshold;
 	float density;
 	int renderWidth, renderHeight;
+	
 	bool bDrawDebugVolume;
 };
