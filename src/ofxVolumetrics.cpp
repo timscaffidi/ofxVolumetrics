@@ -143,6 +143,12 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 	// raycasting pass
 	fboRender.begin(OF_FBOMODE_NODEFAULTS);
 	{
+		// fix flipped y-axis
+		ofSetMatrixMode(OF_MATRIX_PROJECTION);
+		ofScale(1, -1, 1);
+		ofSetMatrixMode(OF_MATRIX_MODELVIEW);
+		ofScale(1, -1, 1);
+
 		ofClear(0, 0);
 
 		vec3 cubeSize(w, h, d);
