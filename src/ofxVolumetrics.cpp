@@ -69,7 +69,7 @@ ofxVolumetrics::~ofxVolumetrics() {
 
 void ofxVolumetrics::setup(int w, int h, int d, ofVec3f voxelSize, bool usePowerOfTwoTexSize) {
 	string shadersPath = "ofxVolumetrics/shaders/";
-	shadersPath += ofIsGLProgrammableRenderer() ? "gl2/" : "gl3/";
+	shadersPath += ofIsGLProgrammableRenderer() ? "gl3/" : "gl2/";
 	volumeShader.unload();
 	volumeShader.load(shadersPath + "raycast.vert", shadersPath + "raycast.frag");
 
@@ -161,6 +161,9 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 		volumeShader.setUniform1f("quality", quality.z); // 0 ... 1
 		volumeShader.setUniform1f("density", density); // 0 ... 1
 		volumeShader.setUniform1f("threshold", threshold);//(float)mouseX/(float)ofGetWidth());
+		if (ofIsGLProgrammableRenderer()) {
+			volumeShader.setUniformMatrix4f("modelViewMatrixInverse", glm::inverse(ofGetCurrentMatrix(OF_MATRIX_MODELVIEW)));
+		}
 
 		glFrontFace(cull_mode_fbo);
 		glEnable(GL_CULL_FACE);
