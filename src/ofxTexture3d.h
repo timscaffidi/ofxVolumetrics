@@ -1,12 +1,9 @@
 #pragma once
-
 #include "ofTexture.h"
-#include "ofMain.h"
 
-class ofxTextureData3d : public ofTextureData
-{
-    public:
-    ofxTextureData3d() {
+class ofxTextureData3d : public ofTextureData {
+public:
+	ofxTextureData3d() {
 		textureID = 0;
 
 		glTypeInternal = GL_RGB8;
@@ -33,28 +30,29 @@ class ofxTextureData3d : public ofTextureData
 	float tex_v;
 	float tex_d;
 	float depth;
-    int glType, pixelType;
-    int glTypeInternal;
+	int glType, pixelType;
+	int glTypeInternal;
 };
 
-class ofxTexture3d
-{
-    public:
-        ofxTexture3d();
-        virtual ~ofxTexture3d();
-        void allocate(int w, int h, int d, int internalGlDataType);
-        void loadData(unsigned char * data, int w, int h, int d, int xOffset, int yOffset, int zOffset, int glFormat);
-        void loadData(float* data, int w, int h, int d, int xOffset, int yOffset, int zOffset, int glFormat);
-        void loadData(unsigned short* data, int w, int h, int d, int xOffset, int yOffset, int zOffset, int glFormat);
-        void loadData(ofPixels & pix, int d, int xOffset, int yOffset, int zOffset);
-        void loadData(ofShortPixels & pix, int d, int xOffset, int yOffset, int zOffset);
-        void loadData(ofFloatPixels & pix, int d, int xOffset, int yOffset, int zOffset);
-        void bind();
-        void unbind();
-        void clear();
-        ofxTextureData3d getTextureData();
-    protected:
-        void loadData(void * data, int w, int h, int d, int xOffset, int yOffset, int zOffset, int glFormat);
-    private:
-        ofxTextureData3d texData;
+class ofxTexture3d {
+public:
+	ofxTexture3d();
+	virtual ~ofxTexture3d();
+	void allocate(int w, int h, int d, int internalGlDataType);
+	void loadData(unsigned char* data, int w, int h, int d, int xOffset, int yOffset, int zOffset, int glFormat);
+	void loadData(float* data, int w, int h, int d, int xOffset, int yOffset, int zOffset, int glFormat);
+	void loadData(unsigned short* data, int w, int h, int d, int xOffset, int yOffset, int zOffset, int glFormat);
+	void loadData(ofPixels& pix, int d, int xOffset, int yOffset, int zOffset);
+	void loadData(ofShortPixels& pix, int d, int xOffset, int yOffset, int zOffset);
+	void loadData(ofFloatPixels& pix, int d, int xOffset, int yOffset, int zOffset);
+	void bind();
+	void bindAsImage(GLuint unit, GLenum access, GLint level = 0, GLboolean layered = GL_TRUE, GLint layer = 0);
+	void unbind();
+	void clear();
+	void setTextureMinMagFilter(GLint filterMode);
+	ofxTextureData3d getTextureData();
+protected:
+	void loadData(void* data, int w, int h, int d, int xOffset, int yOffset, int zOffset, int glFormat);
+private:
+	ofxTextureData3d texData;
 };
