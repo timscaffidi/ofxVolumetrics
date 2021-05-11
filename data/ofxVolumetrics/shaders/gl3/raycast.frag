@@ -1,4 +1,4 @@
-#version 130
+#version 150
 //#extension GL_ARB_texture_rectangle : enable
 
 in vec3 v_texcoord;
@@ -15,19 +15,19 @@ uniform float quality;
 uniform float threshold;
 uniform float density;
 
-struct Ray 
+struct Ray
 {
     vec3 Origin;
     vec3 Dir;
 };
 
-struct BoundingBox 
+struct BoundingBox
 {
     vec3 Min;
     vec3 Max;
 };
 
-bool IntersectBox(Ray r, BoundingBox box, out float t0, out float t1) 
+bool IntersectBox(Ray r, BoundingBox box, out float t0, out float t1)
 {
     vec3 invR = 1.0 / r.Dir;
     vec3 tbot = invR * (box.Min - r.Origin);
@@ -41,7 +41,7 @@ bool IntersectBox(Ray r, BoundingBox box, out float t0, out float t1)
     return t0 <= t1;
 }
 
-void main() 
+void main()
 {
     vec3 minv = vec3(0.) + 1. / vol_d_pot;
     vec3 maxv = (vol_d / vol_d_pot) - 1. / vol_d_pot;
@@ -69,7 +69,7 @@ void main()
 
     vec = rayStart;
     float dl = length(dir);
-    if (dl == clamp(dl, 0., vol_l)) 
+    if (dl == clamp(dl, 0., vol_l))
     {
         int steps = int(floor(length(vold * dir) * quality));
         vec3 delta_dir = dir / float(steps);
@@ -83,20 +83,20 @@ void main()
         for (int i = 0; i < steps; i++)
         {
             vec3 vecz = vec + zOffsetVec;
-            if (vecz.z > maxv.z) 
+            if (vecz.z > maxv.z)
             {
                 vecz.z -= maxv.z;
             }
 
             color_sample = texture(volume_tex, vecz);
-            if (color_sample.a > threshold) 
+            if (color_sample.a > threshold)
             {
                 float oneMinusAlpha = 1. - col_acc.a;
                 color_sample.a *= aScale;
                 col_acc.rgb = mix(col_acc.rgb, color_sample.rgb * color_sample.a, oneMinusAlpha);
                 col_acc.a += color_sample.a * oneMinusAlpha;
                 col_acc.rgb /= col_acc.a;
-                if (col_acc.a >= 1.0) 
+                if (col_acc.a >= 1.0)
                 {
                     break; // terminate if opacity > 1
                 }
@@ -104,6 +104,6 @@ void main()
             vec += delta_dir;
         }
     }
-   
+
     out_color = col_acc;
 }
