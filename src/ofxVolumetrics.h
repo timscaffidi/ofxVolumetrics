@@ -25,6 +25,7 @@ public:
 	void destroy();
 	
 	void updateVolumeData(unsigned char* data, int w, int h, int d, int xOffset, int yOffset, int zOffset);
+	void updateTexture(int xOffset, int yOffset, int zOffset, int x, int y, int width, int height);
 	
 	void drawVolume(float x, float y, float z, float size, int zTexOffset);
 	void drawVolume(float x, float y, float z, float w, float h, float d, int zTexOffset);
