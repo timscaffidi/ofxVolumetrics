@@ -272,3 +272,7 @@ float ofxVolumetrics::getDensity() {
 const ofFbo& ofxVolumetrics::getFbo() const {
 	return fboRender;
 }
+
+ofxTextureData3d ofxVolumetrics::getTextureData() {
+	return volumeTexture.getTextureData();
+}
