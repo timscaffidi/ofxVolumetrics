@@ -41,6 +41,7 @@ public:
 	float getZQuality();
 	float getThreshold();
 	float getDensity();
+	ofxTextureData3d getTextureData();
 	
 	void setXyQuality(float q);
 	void setZQuality(float q);
