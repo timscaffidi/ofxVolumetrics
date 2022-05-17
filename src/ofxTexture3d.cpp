@@ -88,6 +88,13 @@ void ofxTexture3d::loadData(void* data, int w, int h, int d, int xOffset, int yO
 
 }
 
+void ofxTexture3d::loadTexture(int xOffset, int yOffset, int zOffset, int x, int y, int width, int height) {
+	glEnable(texData.textureTarget);
+	glBindTexture(texData.textureTarget, (GLuint)texData.textureID);
+	glCopyTexSubImage3D(texData.textureTarget, 0, xOffset, yOffset, zOffset, x, y, width, height);
+	glDisable(texData.textureTarget);
+}
+
 void ofxTexture3d::clear() {
 	release(texData.textureID);
 	texData.textureID = 0;

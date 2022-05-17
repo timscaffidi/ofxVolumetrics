@@ -45,6 +45,7 @@ public:
 	void loadData(ofPixels& pix, int d, int xOffset, int yOffset, int zOffset);
 	void loadData(ofShortPixels& pix, int d, int xOffset, int yOffset, int zOffset);
 	void loadData(ofFloatPixels& pix, int d, int xOffset, int yOffset, int zOffset);
+	void loadTexture(int xOffset, int yOffset, int zOffset, int x, int y, int width, int height);
 	void bind();
 	void bindAsImage(GLuint unit, GLenum access, GLint level = 0, GLboolean layered = GL_TRUE, GLint layer = 0);
 	void unbind();
