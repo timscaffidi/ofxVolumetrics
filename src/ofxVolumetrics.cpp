@@ -197,7 +197,7 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 
 	ofPushView();
 
-	ofSetColor(254);
+	ofSetColor(255);
 	ofSetupScreenOrtho();		
 	fboRender.draw(0, 0, ofGetWidth(), ofGetHeight());
 
