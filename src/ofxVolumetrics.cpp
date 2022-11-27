@@ -64,12 +64,18 @@ ofxVolumetrics::ofxVolumetrics() {
 		20, 22, 21, 21, 22, 23
 	};
 	volumeMesh.addVertices(vertices);
-	volumeMesh.addIndices(indices);
+	for(int i = 0; i < indices.size(); i++){
+		volumeMesh.addIndex(indices[i]);
+	}
 }
 
 void ofxVolumetrics::setup(int w, int h, int d, vec3 voxelSize, bool usePowerOfTwoTexSize) {
 	string shadersPath = "ofxVolumetrics/shaders/";
-	shadersPath += ofIsGLProgrammableRenderer() ? "gl3/" : "gl2/";
+	#ifndef TARGET_EMSCRIPTEN;
+		shadersPath += ofIsGLProgrammableRenderer() ? "gl3/" : "gl2/";
+	#else
+		shadersPath += "gles3/";
+	#endif
 	volumeShader.unload();
 	volumeShader.load(shadersPath + "raycast.vert", shadersPath + "raycast.frag");
 
@@ -191,7 +197,7 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 
 	ofPushView();
 
-	glColor4iv(color);
+	ofSetColor(254);
 	ofSetupScreenOrtho();		
 	fboRender.draw(0, 0, ofGetWidth(), ofGetHeight());
 

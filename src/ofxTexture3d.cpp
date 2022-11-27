@@ -71,7 +71,7 @@ void ofxTexture3d::loadData(ofFloatPixels& pix, int d, int xOffset, int yOffset,
 
 void ofxTexture3d::loadData(void* data, int w, int h, int d, int xOffset, int yOffset, int zOffset, int glFormat) {
 	if (glFormat != texData.glType) {
-		ofLogError() << "ofxTexture3d::loadData() failed to upload format " << ofGetGlInternalFormatName(glFormat) << " data to " << ofGetGlInternalFormatName(texData.glType) << " texture" << endl;
+		ofLogError() << "ofxTexture3d::loadData() failed to upload format " << ofGetGlInternalFormatName(glFormat) << " data to " << ofGetGlInternalFormatName(texData.glType) << " texture" << std::endl;
 		return;
 	}
 
