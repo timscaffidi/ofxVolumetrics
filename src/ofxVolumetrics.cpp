@@ -71,7 +71,7 @@ ofxVolumetrics::ofxVolumetrics() {
 
 void ofxVolumetrics::setup(int w, int h, int d, vec3 voxelSize, bool usePowerOfTwoTexSize) {
 	string shadersPath = "ofxVolumetrics/shaders/";
-	#ifndef TARGET_EMSCRIPTEN;
+	#ifndef TARGET_EMSCRIPTEN
 		shadersPath += ofIsGLProgrammableRenderer() ? "gl3/" : "gl2/";
 	#else
 		shadersPath += "gles3/";
