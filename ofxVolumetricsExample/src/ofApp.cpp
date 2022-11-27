@@ -8,7 +8,7 @@ void ofApp::setup()
     background.allocate(1024,768,OF_IMAGE_COLOR);
     background.load("background.png");
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
-    
+
     imageSequence.init("volumes/head/cthead-8bit",3,".tif", 1);
     volWidth = imageSequence.getWidth();
     volHeight = imageSequence.getHeight();
@@ -47,8 +47,6 @@ void ofApp::setup()
 
     cam.setDistance(1000);
     cam.enableMouseInput();
-    cam.setNearClip(0);
-    cam.setFarClip(50000);
 }
 
 
