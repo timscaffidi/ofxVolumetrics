@@ -8,7 +8,6 @@ void ofApp::setup()
     background.allocate(1024,768,OF_IMAGE_COLOR);
     background.load("background.png");
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
-
     imageSequence.init("volumes/head/cthead-8bit",3,".tif", 1);
     volWidth = imageSequence.getWidth();
     volHeight = imageSequence.getHeight();
@@ -47,6 +46,8 @@ void ofApp::setup()
 
     cam.setDistance(1000);
     cam.enableMouseInput();
+    cam.setNearClip(0);
+    cam.setFarClip(50000);
 }
 
 
@@ -61,7 +62,8 @@ void ofApp::draw()
     ofSetColor(255,255,255,255);
     background.draw(0,0,ofGetWidth(),ofGetHeight());
 
-    cam.begin();   
+    cam.begin();
+    ofRotateXDeg(90);
     myVolume.drawVolume(0,0,0, ofGetHeight(), 0);
     if (drawDebug) ofDrawAxis(100);
     cam.end();
