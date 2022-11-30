@@ -121,6 +121,10 @@ void ofxVolumetrics::updateVolumeData(unsigned char* data, int w, int h, int d, 
 	volumeTexture.loadData(data, w, h, d, xOffset, yOffset, zOffset, GL_RGBA);
 }
 
+void ofxVolumetrics::updateTexture(int xOffset, int yOffset, int zOffset, int x, int y, int width, int height) {
+	volumeTexture.loadTexture(xOffset, yOffset, zOffset, x, y, width, height);
+}
+
 void ofxVolumetrics::drawVolume(float x, float y, float z, float size, int zTexOffset) {
 	vec3 volumeSize = voxelRatio * vec3(volWidth, volHeight, volDepth);
 	float maxDim = glm::max(glm::max(volumeSize.x, volumeSize.y), volumeSize.z);
