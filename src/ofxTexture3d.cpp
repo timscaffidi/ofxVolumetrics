@@ -39,6 +39,10 @@ void ofxTexture3d::allocate(int w, int h, int d, int internalGlDataType) {
 	glTexParameteri(texData.textureTarget, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(texData.textureTarget, GL_TEXTURE_WRAP_R, GL_REPEAT);
 
+	#ifndef TARGET_EMSCRIPTEN
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	#endif
+	
 	glDisable(texData.textureTarget);
 
 	texData.width = w;
