@@ -64,12 +64,18 @@ ofxVolumetrics::ofxVolumetrics() {
 		20, 22, 21, 21, 22, 23
 	};
 	volumeMesh.addVertices(vertices);
-	volumeMesh.addIndices(indices);
+	for(int i = 0; i < indices.size(); i++){
+		volumeMesh.addIndex(indices[i]);
+	}
 }
 
 void ofxVolumetrics::setup(int w, int h, int d, vec3 voxelSize, bool usePowerOfTwoTexSize) {
 	string shadersPath = "ofxVolumetrics/shaders/";
-	shadersPath += ofIsGLProgrammableRenderer() ? "gl3/" : "gl2/";
+	#ifndef TARGET_EMSCRIPTEN
+		shadersPath += ofIsGLProgrammableRenderer() ? "gl3/" : "gl2/";
+	#else
+		shadersPath += "gles3/";
+	#endif
 	volumeShader.unload();
 	volumeShader.load(shadersPath + "raycast.vert", shadersPath + "raycast.frag");
 
@@ -113,6 +119,10 @@ void ofxVolumetrics::destroy() {
 
 void ofxVolumetrics::updateVolumeData(unsigned char* data, int w, int h, int d, int xOffset, int yOffset, int zOffset) {
 	volumeTexture.loadData(data, w, h, d, xOffset, yOffset, zOffset, GL_RGBA);
+}
+
+void ofxVolumetrics::updateTexture(int xOffset, int yOffset, int zOffset, int x, int y, int width, int height) {
+	volumeTexture.loadTexture(xOffset, yOffset, zOffset, x, y, width, height);
 }
 
 void ofxVolumetrics::drawVolume(float x, float y, float z, float size, int zTexOffset) {
@@ -191,7 +201,7 @@ void ofxVolumetrics::drawVolume(float x, float y, float z, float w, float h, flo
 
 	ofPushView();
 
-	glColor4iv(color);
+	ofSetColor(255);
 	ofSetupScreenOrtho();		
 	fboRender.draw(0, 0, ofGetWidth(), ofGetHeight());
 
@@ -267,4 +277,8 @@ float ofxVolumetrics::getDensity() {
 }
 const ofFbo& ofxVolumetrics::getFbo() const {
 	return fboRender;
+}
+
+ofxTextureData3d ofxVolumetrics::getTextureData() {
+	return volumeTexture.getTextureData();
 }

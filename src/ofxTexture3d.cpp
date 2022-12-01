@@ -39,8 +39,10 @@ void ofxTexture3d::allocate(int w, int h, int d, int internalGlDataType) {
 	glTexParameteri(texData.textureTarget, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(texData.textureTarget, GL_TEXTURE_WRAP_R, GL_REPEAT);
 
-	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
+	#ifndef TARGET_EMSCRIPTEN
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	#endif
+	
 	glDisable(texData.textureTarget);
 
 	texData.width = w;
@@ -71,7 +73,7 @@ void ofxTexture3d::loadData(ofFloatPixels& pix, int d, int xOffset, int yOffset,
 
 void ofxTexture3d::loadData(void* data, int w, int h, int d, int xOffset, int yOffset, int zOffset, int glFormat) {
 	if (glFormat != texData.glType) {
-		ofLogError() << "ofxTexture3d::loadData() failed to upload format " << ofGetGlInternalFormatName(glFormat) << " data to " << ofGetGlInternalFormatName(texData.glType) << " texture" << endl;
+		ofLogError() << "ofxTexture3d::loadData() failed to upload format " << ofGetGlInternalFormatName(glFormat) << " data to " << ofGetGlInternalFormatName(texData.glType) << " texture" << std::endl;
 		return;
 	}
 
@@ -86,6 +88,13 @@ void ofxTexture3d::loadData(void* data, int w, int h, int d, int xOffset, int yO
 	glTexSubImage3D(texData.textureTarget, 0, xOffset, yOffset, zOffset, w, h, d, texData.glType, texData.pixelType, data);
 	glDisable(texData.textureTarget);
 
+}
+
+void ofxTexture3d::loadTexture(int xOffset, int yOffset, int zOffset, int x, int y, int width, int height) {
+	glEnable(texData.textureTarget);
+	glBindTexture(texData.textureTarget, (GLuint)texData.textureID);
+	glCopyTexSubImage3D(texData.textureTarget, 0, xOffset, yOffset, zOffset, x, y, width, height);
+	glDisable(texData.textureTarget);
 }
 
 void ofxTexture3d::clear() {

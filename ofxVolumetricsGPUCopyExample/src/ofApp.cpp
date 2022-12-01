@@ -3,47 +3,18 @@
 
 void ofApp::setup()
 {
-    ofSetFrameRate(60);
-    ofSetLogLevel(OF_LOG_VERBOSE);
-    background.allocate(1024,768,OF_IMAGE_COLOR);
-    background.load("background.png");
-    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+    fbo.allocate(256, 256);
 
-    imageSequence.init("volumes/head/cthead-8bit",3,".tif", 1);
-    volWidth = imageSequence.getWidth();
-    volHeight = imageSequence.getHeight();
-    volDepth = imageSequence.getSequenceLength();
+    volWidth = 256;
+    volHeight = 256;
+    volDepth = 256;
 
     cout << "setting up volume data buffer at " << volWidth << "x" << volHeight << "x" << volDepth <<"\n";
 
-    volumeData = new unsigned char[volWidth*volHeight*volDepth*4];
-
-    for(int z=0; z<volDepth; z++)
-    {
-        imageSequence.loadFrame(z);
-        for(int x=0; x<volWidth; x++)
-        {
-            for(int y=0; y<volHeight; y++)
-            {
-                // convert from greyscale to RGBA, false color
-                int i4 = ((x+volWidth*y)+z*volWidth*volHeight)*4;
-                int sample = imageSequence.getPixels()[x+y*volWidth];
-                ofColor c;
-                c.setHsb(sample, 255-sample, sample);
-
-                volumeData[i4] = c.r;
-                volumeData[i4+1] = c.g;
-                volumeData[i4+2] = c.b;
-                volumeData[i4+3] = sample;
-            }
-        }
-    }
-
-    myVolume.setup(volWidth, volHeight, volDepth, ofVec3f(1,1,2),true);
-    myVolume.updateVolumeData(volumeData,volWidth,volHeight,volDepth,0,0,0);
+    myVolume.setup(volWidth, volHeight, volDepth, ofVec3f(1,1,1),true);
     myVolume.setRenderSettings(1.0, 1.0, 0.75, 0.1);
-
-    linearFilter = false;
+    myVolume.setVolumeTextureFilterMode(GL_LINEAR);
+    linearFilter = true;
 
     cam.setDistance(1000);
     cam.enableMouseInput();
@@ -59,11 +30,8 @@ void ofApp::update()
 void ofApp::draw()
 {
     ofSetColor(255,255,255,255);
-    background.draw(0,0,ofGetWidth(),ofGetHeight());
-
     cam.begin();
-    ofRotateXDeg(90);
-    myVolume.drawVolume(0,0,0, ofGetHeight(), 0);
+    myVolume.drawVolume(0, 0, 0, ofGetHeight(), 0);
     if (drawDebug) ofDrawAxis(100);
     cam.end();
 
@@ -78,6 +46,16 @@ void ofApp::draw()
                        "Density (d/D):     " + ofToString(myVolume.getDensity()) + "\n" +
                        "Filter mode (l/n): " + (linearFilter ? "linear" : "nearest") + "\n" +
                        "Draw debug (b):    " + (drawDebug ? "on" : "off"), 20, 25);
+    fbo.begin();
+    for (int x = 0; x < volDepth; x++) {
+        ofClear(0);
+        ofSetColor(ofRandom(255), 12, 0);
+        ofDrawRectangle(ofRandom(20), ofRandom(20), 50, 50);
+        ofSetColor(50, ofRandom(255), 100);
+        ofDrawCircle(90 + ofRandom(20), 90 + ofRandom(20), 50);
+        myVolume.updateTexture(0, 0, x, 0, 0, fbo.getWidth(), fbo.getHeight());
+    }
+    fbo.end();
 }
 
 
